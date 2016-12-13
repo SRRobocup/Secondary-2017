@@ -44,8 +44,8 @@ TCA9548A::TCA9548A(uint8_t it)
 
 void TCA9548A::select(uint8_t pin)
 {
-	if (i > 7) return;
+	if (pin > 7) return;
 	Wire.beginTransmission(address);
-	Wire.write(1 << i);
+	Wire.write(1 << pin);
 	Wire.endTransmission();  
 }

@@ -25,8 +25,8 @@ bool status = false;
 void setup() {
   Serial.begin(115200);
   Wire.begin(0x08 >> 1);
-  Wire.onRequest(receiveEvent);
-  Wire.onReceive(requestEvent);
+  Wire.onReceive(receiveEvent);
+  Wire.onRequest(requestEvent);
   // init all sensors
   downLeft.init();
   downRight.init();
@@ -38,15 +38,11 @@ void setup() {
   front.setMeasurementTimingBudget(20000);
   left.setMeasurementTimingBudget(20000);
   right.setMeasurementTimingBudget(20000);
-  downLeft.setMeasurementTimingBudget(20000);
-  downRight.setMeasurementTimingBudget(20000);
 #elif defined HIGH_ACCURACY
   // increase timing budget to 200 ms
   front.setMeasurementTimingBudget(200000);
   left.setMeasurementTimingBudget(200000);
   right.setMeasurementTimingBudget(200000);
-  downLeft.setMeasurementTimingBudget(200000);
-  downRight.setMeasurementTimingBudget(200000);
 #endif
 }
 
@@ -61,7 +57,7 @@ void receiveEvent(int bytesReceived) {
 
 //send data buffer
 void requestEvent() {
-  byte[8] buff;
+  byte buff[8];
   buff[7] = (data >> 56) & 0xFF;
   buff[6] = (data >> 48) & 0xFF;
   buff[5] = (data >> 40) & 0xFF;
@@ -101,7 +97,7 @@ void loop() {
       status = downRight.timeoutOccurred();
       bytesToSend = 2;
       break;
-    case Ox47:
+    case 0x47:
     case 0x48:
     case 0x49:
     case 0x50:

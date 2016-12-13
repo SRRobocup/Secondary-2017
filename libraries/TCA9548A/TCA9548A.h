@@ -46,9 +46,9 @@
 
 #define TCA9548A_ADDRESS          (0x70)
 
-class Adafruit_TCS34725 {
+class TCA9548A {
  public:
-  TCA9548A(uint8_t = TCA9548A_ADDRESS)
+  TCA9548A(uint8_t = TCA9548A_ADDRESS);
   void select(uint8_t);
  private:
   uint8_t address;

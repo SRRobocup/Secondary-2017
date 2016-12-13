@@ -35,14 +35,14 @@
 // Constructors ////////////////////////////////////////////////////////////////
 
 VL53L0X::VL53L0X(void)
-  : XSHUTpin(7);
+  : XSHUTpin(7)
   , address(ADDRESS_DEFAULT)
   , io_timeout(0) // no timeout
   , did_timeout(false)
 {
 }
 
-VL53L0X(int x)
+VL53L0X::VL53L0X(int x)
   : XSHUTpin(x)
   , address(ADDRESS_DEFAULT)
   , io_timeout(0)
