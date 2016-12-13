@@ -1,3 +1,4 @@
+#include <TCA9548A.h>
 #include <Adafruit_TCS34725.h>
 #include <VL6180X.h>
 #include <VL53L0X.h>
@@ -11,8 +12,14 @@ VL53L0X right = VL53L0X(5);
 VL6180X downLeft = VL6180X(6);
 VL6180X downRight = VL6180X(7);
 
+TCA9548A colors = TCA9548A();
+
+Adafruit_TCS34725 colorSensor = Adafruit_TCS34725();
+
 volatile uint16_t currentTag = 0;
-volatile uint16_t data = 0;
+volatile uint64_t data = 0;
+volatile uint8_t bytesToSend = 0;
+uint16_t red, blue, green, clear;
 bool status = false;
 
 void setup() {
@@ -54,10 +61,16 @@ void receiveEvent(int bytesReceived) {
 
 //send data buffer
 void requestEvent() {
-  byte[2] buff;
-  buff[0] = (data >> 8) & 0xFF;
-  buff[1] = (data) & 0xFF;
-  Wire.write(buff,2);
+  byte[8] buff;
+  buff[7] = (data >> 56) & 0xFF;
+  buff[6] = (data >> 48) & 0xFF;
+  buff[5] = (data >> 40) & 0xFF;
+  buff[4] = (data >> 32) & 0xFF;
+  buff[3] = (data >> 24) & 0xFF;
+  buff[2] = (data >> 16) & 0xFF;
+  buff[1] = (data >> 8) & 0xFF;
+  buff[0] = (data) & 0xFF;
+  Wire.write(buff,bytesToSend);
 }
 
 void loop() {
@@ -66,27 +79,46 @@ void loop() {
     case 0x42:
       data = left.readRangeSingleMillimeters();
       status = left.timeoutOccurred();
+      bytesToSend = 2;
       break;
     case 0x43:
       data = front.readRangeSingleMillimeters();
       status = front.timeoutOccurred();
+      bytesToSend = 2;
       break;
     case 0x44:
       data = right.readRangeSingleMillimeters();
       status = right.timeoutOccurred();
+      bytesToSend = 2;
       break;
     case 0x45:
       data = downLeft.readRangeSingleMillimeters();
       status = downLeft.timeoutOccurred();
+      bytesToSend = 2;
       break;
     case 0x46:
       data = downRight.readRangeSingleMillimeters();
       status = downRight.timeoutOccurred();
+      bytesToSend = 2;
+      break;
+    case Ox47:
+    case 0x48:
+    case 0x49:
+    case 0x50:
+    case 0x51:
+    case 0x52:
+    case 0x53:
+    case 0x54:
+      colors.select(currentTag - 0x47);
+      colorSensor.getRawDataEx(&red,&blue,&green,&clear);
+      data = red << 48 | blue << 32 | green << 16 | clear;
+      bytesToSend = 8;
       break;
   }
   //if no convergence, set to ridiculous number
   if (status) {
     data = 32767;
+    status = false;
   }
   //reset tag
   currentTag = 0;
