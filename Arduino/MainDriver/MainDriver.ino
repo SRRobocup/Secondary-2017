@@ -16,9 +16,12 @@ TCA9548A colors = TCA9548A();
 
 Adafruit_TCS34725 colorSensor = Adafruit_TCS34725();
 
+const int pingPin = 7;
 volatile uint16_t currentTag = 0;
+volatile uint8_t currentCommand = 0;
 volatile uint64_t data = 0;
 volatile uint8_t bytesToSend = 0;
+int pingBuffer = 0;
 uint16_t red, blue, green, clear;
 bool status = false;
 
@@ -27,12 +30,18 @@ void setup() {
   Wire.begin(0x08 >> 1);
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
+  TWBR = 12;
   // init all sensors
+  colors.select(0);
   downLeft.init();
   downRight.init();
   front.init();
   left.init();
   right.init();
+  downLeft.configureDefault();
+  downLeft.setTimeout(500);
+  downRight.configureDefault();
+  downRight.setTimeout(500);
 #if defined HIGH_SPEED
   // reduce timing budget to 20 ms (default is about 33 ms)
   front.setMeasurementTimingBudget(20000);
@@ -51,7 +60,7 @@ void receiveEvent(int bytesReceived) {
   int temp;
   currentTag = Wire.read();
   for (int i = 1; i < bytesReceived; i++) {
-    temp = Wire.read();
+    currentCommand = Wire.read();
   }
 }
 
@@ -72,6 +81,29 @@ void requestEvent() {
 void loop() {
   //based on read from receive event, gather data from sensors
   switch (currentTag) {
+    case 0x00:
+      switch (currentCommand)
+      {
+        case 0x00:
+          front.setMeasurementTimingBudget(20000);
+          break;
+        case 0x01:
+          left.setMeasurementTimingBudget(20000);
+          break;
+        case 0x02:
+          right.setMeasurementTimingBudget(20000);
+          break;
+        case 0x03:
+          front.setMeasurementTimingBudget(200000);
+          break;
+        case 0x04:
+          left.setMeasurementTimingBudget(200000);
+          break;
+        case 0x05:
+          right.setMeasurementTimingBudget(200000);
+          break;
+      }
+      break;
     case 0x42:
       data = left.readRangeSingleMillimeters();
       status = left.timeoutOccurred();
@@ -98,6 +130,8 @@ void loop() {
       bytesToSend = 2;
       break;
     case 0x47:
+      data = pingBuffer;
+      break;
     case 0x48:
     case 0x49:
     case 0x50:
@@ -105,7 +139,8 @@ void loop() {
     case 0x52:
     case 0x53:
     case 0x54:
-      colors.select(currentTag - 0x47);
+    case 0x55:
+      colors.select(currentTag - 0x48);
       colorSensor.getRawDataEx(&red,&blue,&green,&clear);
       data = red << 48 | blue << 32 | green << 16 | clear;
       bytesToSend = 8;
@@ -117,5 +152,15 @@ void loop() {
     status = false;
   }
   //reset tag
-  currentTag = 0;
+  currentTag = -1;
+
+  pinMode(pingPin, OUTPUT);
+  digitalWrite(pingPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(pingPin, HIGH);
+  delayMicroseconds(5);
+  digitalWrite(pingPin, LOW);
+
+  pinMode(pingPin, INPUT);
+  pingBuffer = pulseIn(pingPin, HIGH);
 }

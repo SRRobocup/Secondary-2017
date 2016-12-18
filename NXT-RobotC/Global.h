@@ -2,14 +2,6 @@
 #define __GLOBAL.H__
 #include "common.h"
 #define ARDUINO_ADDRESS 0x08
-tSensors arduino = S4;
-ubyte leftDist = 0x42;
-ubyte frontDist = 0x43;
-ubyte rightDist = 0x44;
-ubyte downLeftDist = 0x45;
-ubyte downRightDist = 0x46;
-const int numOfIterations = 31;
-const float microsecondsPerIteration = (float) 1000 / numOfIterations;
 
 typedef enum eColor {
 	cInvalid = 255,
@@ -26,7 +18,42 @@ typedef struct sColorSensor {
 	float whiteThreshold;
 	float greenRatio;
 	bool isLight;
+	Color currentColor;
 } ColorSensor;
+
+typedef struct sLaserSensor {
+	ubyte address;
+} LaserSensor;
+
+typedef struct sPingSensor {
+	ubyte address;
+} PingSensor;
+
+tSensors arduino = S4;
+LaserSensor leftDist;
+LaserSensor frontDist;
+LaserSensor rightDist;
+LaserSensor downLeftDist;
+LaserSensor downRightDist;
+PingSensor frontPing;
+ColorSensor leftFrontL;
+ColorSensor leftFrontM;
+ColorSensor middleFront;
+ColorSensor rightFrontR;
+ColorSensor rightFrontM;
+const int numOfIterations = 31;
+const float obstacleThreshold = 7;
+const float microsecondsPerIteration = (float) 1000 / numOfIterations;
+
+void generateColor(ColorSensor* sensor, ubyte address, float blackThreshold, float whiteThreshold, float greenRatio, bool isLight)
+{
+	sensor->address = address;
+	sensor->blackThreshold = blackThreshold;
+	sensor->whiteThreshold = whiteThreshold;
+	sensor->greenRatio = greenRatio;
+	sensor->isLight = isLight;
+	sensor->currentColor = cInvalid;
+}
 
 void delayMicroseconds(int num)
 {
@@ -34,7 +61,7 @@ void delayMicroseconds(int num)
 		noOp();
 }
 
-float getDistance(ubyte sensor)
+float getDistance(LaserSensor sensor)
 {
 	if (sensor < 0x42 || sensor > 0x46)
 		return -1;
@@ -43,7 +70,7 @@ float getDistance(ubyte sensor)
 	tByteArray receive;
 	send[0] = 2;
 	send[1] = ARDUINO_ADDRESS;
-	send[2] = sensor;
+	send[2] = sensor.address;
 	writeI2C(arduino,send);
 	delayMicroseconds(40);
 	send[2] = 0;
@@ -54,9 +81,27 @@ float getDistance(ubyte sensor)
 	return (float)ret/1000;
 }
 
+float getDistance(PingSensor sensor)
+{
+	if (sensor != 0x47)
+		return -1;
+	int ret = 0;
+	tByteArray send;
+	tByteArray receive;
+	send[0] = 2;
+	send[1] = ARDUINO_ADDRESS;
+	send[2] = sensor.address;
+	writeI2C(arduino,send);
+	delayMicroseconds(40);
+	send[2] = 0;
+	writeI2C(arduino,send,receive,2);
+	ret = receive[1] << 8 | receive[0];
+	return (float)ret / 29 / 2;
+}
+
 Color getColor(ColorSensor sensor)
 {
-	if (sensor.address < 0x47 || sensor.address > 0x54)
+	if (sensor.address < 0x48 || sensor.address > 0x55)
 		return cInvalid;
 	tByteArray send;
 	tByteArray receive;
@@ -81,5 +126,7 @@ Color getColor(ColorSensor sensor)
 		return cGreen;
 	return cGradient;
 }
+
+
 
 #endif
