@@ -17,6 +17,8 @@ typedef struct sColorSensor {
 	float blackThreshold;
 	float whiteThreshold;
 	float greenRatio;
+	float bwThreshold;
+	float silverThreshold;
 	bool isLight;
 	Color currentColor;
 } ColorSensor;
@@ -29,7 +31,12 @@ typedef struct sPingSensor {
 	ubyte address;
 } PingSensor;
 
-tSensors arduino = S4;
+typedef tSensors SensorPort;
+typedef tMotor MotorPort;
+
+SensorPort arduino = S4;
+MotorPort LMotor;
+MotorPort RMotor;
 LaserSensor leftDist;
 LaserSensor frontDist;
 LaserSensor rightDist;
@@ -45,9 +52,10 @@ const int numOfIterations = 31;
 const float obstacleThreshold = 7;
 const float microsecondsPerIteration = (float) 1000 / numOfIterations;
 
-void generateColor(ColorSensor* sensor, ubyte address, float blackThreshold, float whiteThreshold, float greenRatio, bool isLight)
+void generateColor(ColorSensor* sensor, ubyte address,float bwThreshold,float silverThreshold,float blackThreshold, float whiteThreshold, float greenRatio, bool isLight)
 {
 	sensor->address = address;
+	sensor->bwThreshold = bwThreshold;
 	sensor->blackThreshold = blackThreshold;
 	sensor->whiteThreshold = whiteThreshold;
 	sensor->greenRatio = greenRatio;
@@ -99,10 +107,8 @@ float getDistance(PingSensor sensor)
 	return (float)ret / 29 / 2;
 }
 
-Color getColor(ColorSensor sensor)
+void getColorRGB(ColorSensor sensor, int& r, int& g, int&b, int& clear)
 {
-	if (sensor.address < 0x48 || sensor.address > 0x55)
-		return cInvalid;
 	tByteArray send;
 	tByteArray receive;
 	send[0] = 2;
@@ -112,12 +118,22 @@ Color getColor(ColorSensor sensor)
 	delayMicroseconds(40);
 	send[2] = 0;
 	writeI2C(arduino,send,receive,8);
-	int red = receive[7] << 8 | receive[6];
-	int blue = receive[5] << 8 | receive[4];
-	int green = receive[3] << 8 | receive[2];
-	int clear = receive[1] << 8 | receive[0];
+	r = receive[7] << 8 | receive[6];
+	g = receive[5] << 8 | receive[4];
+	b = receive[3] << 8 | receive[2];
+	clear = receive[1] << 8 | receive[0];
+}
+
+Color getColor(ColorSensor sensor)
+{
+	if (sensor.address < 0x48 || sensor.address > 0x55)
+		return cInvalid;
+	int red, green, blue, clear;
+	getColorRGB(sensor,red,green,blue,clear);
 	if (sensor.isLight)
-		return (Color) (clear < sensor.blackThreshold);
+		if (clear > sensor.silverThreshold)
+			return cSilver;
+		return (Color) (clear < sensor.bwThreshold);
 	if (green < sensor.blackThreshold)
 		return cBlack;
 	if (green > sensor.whiteThreshold)
@@ -126,7 +142,5 @@ Color getColor(ColorSensor sensor)
 		return cGreen;
 	return cGradient;
 }
-
-
 
 #endif
