@@ -21,9 +21,6 @@ typedef struct sColorSensor {
 	float silverThreshold;
 	bool isLight;
 	Color currentColor;
-	int red;
-	int green;
-	int blue;
 	int clear;
 } ColorSensor;
 
@@ -188,7 +185,7 @@ float getDistance(PingSensor sensor)
 	return (float)ret / 29 / 2;
 }
 
-void getColorRGB(ColorSensor sensor)
+void getColorRGB(ColorSensor sensor, int& r, int& g, int& b)
 {
 	tByteArray send;
 	tByteArray receive;
@@ -199,9 +196,9 @@ void getColorRGB(ColorSensor sensor)
 	delayMicroseconds(40);
 	send[2] = 0;
 	writeI2C(arduino,send,receive,8);
-	sensor.red = receive[7] << 8 | receive[6];
-	sensor.green = receive[5] << 8 | receive[4];
-	sensor.blue = receive[3] << 8 | receive[2];
+	r = receive[7] << 8 | receive[6];
+	g = receive[5] << 8 | receive[4];
+	b = receive[3] << 8 | receive[2];
 	sensor.clear = receive[1] << 8 | receive[0];
 }
 
@@ -209,16 +206,17 @@ Color getColor(ColorSensor sensor)
 {
 	if (sensor.address < 0x48 || sensor.address > 0x55)
 		return cInvalid;
-	getColorRGB(sensor);
+	int red,green,blue;
+	getColorRGB(sensor,red,green,blue);
 	if (sensor.isLight)
 		if (sensor.clear > sensor.silverThreshold)
 			return cSilver;
 		return (Color) (sensor.clear < sensor.bwThreshold);
-	if (sensor.green < sensor.blackThreshold)
+	if (green < sensor.blackThreshold)
 		return cBlack;
-	if (sensor.green > sensor.whiteThreshold)
+	if (green > sensor.whiteThreshold)
 		return cWhite;
-	if ((float)sensor.green/sensor.red > sensor.greenRatio)
+	if ((float)green/red > sensor.greenRatio)
 		return cGreen;
 	return cGradient;
 }
