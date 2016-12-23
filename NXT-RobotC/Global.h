@@ -21,6 +21,10 @@ typedef struct sColorSensor {
 	float silverThreshold;
 	bool isLight;
 	Color currentColor;
+	int red;
+	int green;
+	int blue;
+	int clear;
 } ColorSensor;
 
 typedef struct sLaserSensor {
@@ -48,6 +52,13 @@ ColorSensor leftFrontM;
 ColorSensor middleFront;
 ColorSensor rightFrontR;
 ColorSensor rightFrontM;
+int forward = 30;
+int turnForward = 20;
+int turnBackward = -15;
+const float wheelbase = 19;
+const float width = 17;
+const float diameter = 4.5;
+const float cm = 360.0 / (diameter *  PI);
 const int numOfIterations = 31;
 const float obstacleThreshold = 7;
 const float microsecondsPerIteration = (float) 1000 / numOfIterations;
@@ -63,10 +74,80 @@ void generateColor(ColorSensor* sensor, ubyte address,float bwThreshold,float si
 	sensor->currentColor = cInvalid;
 }
 
-void delayMicroseconds(int num)
+void delayMicroseconds(int time, int iters = 1000)
 {
-	for (int i = 1; i*microsecondsPerIteration < num; i++)
+	if (time == -1)
+		time = 30000000;
+	for (int i = 1; i*microsecondsPerIteration < time && i < iters; i++)
 		noOp();
+}
+
+bool stillRunning(MotorPort m)
+{
+#ifdef NXT
+	return nMotorRunState[m] != runStateIdle;
+#else
+	return getMotorRunning(m);
+#endif
+}
+
+void resetEncoders()
+{
+	nMotorEncoder[LMotor] = 0;
+	nMotorEncoder[RMotor] = 0;
+}
+
+void stopMotors()
+{
+	motor[LMotor] = 0;
+	motor[RMotor] = 0;
+}
+
+// turning the robot right a certain amount of degrees
+void turnRight(float deg, int power = forward)
+{
+	float target = wheelbase*PI*(deg/360)*cm;
+	resetEncoders();
+	nMotorEncoderTarget[LMotor] = target;
+	motor[LMotor] = power;
+	motor[RMotor] = -power;
+	while(stillRunning(LMotor) || stillRunning(RMotor)){}
+	stopMotors();
+	wait1Msec(100);
+}
+
+void turnLeft(float deg, int power = forward)
+{
+	float target = wheelbase*PI*(deg/360)*cm;
+	resetEncoders();
+	nMotorEncoderTarget[RMotor] = target;
+	motor[LMotor] = -power;
+	motor[RMotor] = power;
+	while(stillRunning(RMotor) || stillRunning(LMotor)){}
+	stopMotors();
+	wait1Msec(100);
+}
+
+void goStraight(float dist, int power = forward)
+{
+	resetEncoders();
+	dist *= cm;
+	nMotorEncoderTarget[LMotor] = dist;
+	motor[LMotor] = power;
+	motor[RMotor] = power;
+	while(stillRunning(LMotor)){}
+	stopMotors();
+}
+
+void goBack(float dist, int power = forward)
+{
+	resetEncoders();
+	dist *= cm;
+	nMotorEncoderTarget[LMotor] = -dist;
+	motor[LMotor] = -power;
+	motor[RMotor] = -power;
+	while(stillRunning(LMotor)){}
+	stopMotors();
 }
 
 float getDistance(LaserSensor sensor)
@@ -80,7 +161,7 @@ float getDistance(LaserSensor sensor)
 	send[1] = ARDUINO_ADDRESS;
 	send[2] = sensor.address;
 	writeI2C(arduino,send);
-	delayMicroseconds(40);
+	delayMicroseconds(-1,1);
 	send[2] = 0;
 	writeI2C(arduino,send,receive,2);
 	ret = receive[1] << 8 | receive[0];
@@ -100,14 +181,14 @@ float getDistance(PingSensor sensor)
 	send[1] = ARDUINO_ADDRESS;
 	send[2] = sensor.address;
 	writeI2C(arduino,send);
-	delayMicroseconds(40);
+	delayMicroseconds(-1,1);
 	send[2] = 0;
 	writeI2C(arduino,send,receive,2);
 	ret = receive[1] << 8 | receive[0];
 	return (float)ret / 29 / 2;
 }
 
-void getColorRGB(ColorSensor sensor, int& r, int& g, int&b, int& clear)
+void getColorRGB(ColorSensor sensor)
 {
 	tByteArray send;
 	tByteArray receive;
@@ -118,27 +199,26 @@ void getColorRGB(ColorSensor sensor, int& r, int& g, int&b, int& clear)
 	delayMicroseconds(40);
 	send[2] = 0;
 	writeI2C(arduino,send,receive,8);
-	r = receive[7] << 8 | receive[6];
-	g = receive[5] << 8 | receive[4];
-	b = receive[3] << 8 | receive[2];
-	clear = receive[1] << 8 | receive[0];
+	sensor.red = receive[7] << 8 | receive[6];
+	sensor.green = receive[5] << 8 | receive[4];
+	sensor.blue = receive[3] << 8 | receive[2];
+	sensor.clear = receive[1] << 8 | receive[0];
 }
 
 Color getColor(ColorSensor sensor)
 {
 	if (sensor.address < 0x48 || sensor.address > 0x55)
 		return cInvalid;
-	int red, green, blue, clear;
-	getColorRGB(sensor,red,green,blue,clear);
+	getColorRGB(sensor);
 	if (sensor.isLight)
-		if (clear > sensor.silverThreshold)
+		if (sensor.clear > sensor.silverThreshold)
 			return cSilver;
-		return (Color) (clear < sensor.bwThreshold);
-	if (green < sensor.blackThreshold)
+		return (Color) (sensor.clear < sensor.bwThreshold);
+	if (sensor.green < sensor.blackThreshold)
 		return cBlack;
-	if (green > sensor.whiteThreshold)
+	if (sensor.green > sensor.whiteThreshold)
 		return cWhite;
-	if ((float)green/red > sensor.greenRatio)
+	if ((float)sensor.green/sensor.red > sensor.greenRatio)
 		return cGreen;
 	return cGradient;
 }
