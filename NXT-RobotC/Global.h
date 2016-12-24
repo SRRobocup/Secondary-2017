@@ -71,6 +71,15 @@ void generateColor(ColorSensor* sensor, ubyte address,float bwThreshold,float si
 	sensor->currentColor = cInvalid;
 }
 
+float clamp(float val,float up,float low)
+{
+	if(val > up)
+		return up;
+	if(val < low)
+		return low;
+	return val;
+}
+
 void delayMicroseconds(int time, int iters = 1000)
 {
 	if (time == -1)

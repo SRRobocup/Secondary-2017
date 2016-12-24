@@ -1,58 +1,60 @@
 #include "Global.h"
-#define frontUltra 1
-#define rightUltra 2
-#define leftUltra 3
-#define motorRight motorA
-#define motorLeft motorB
-void getUltraSensorValue(int port)
+
+void obstacle()
 {
-	//Get sensor values...don't know how to do.
-}
-void turn(int degrees)
-{
-	//Cant make this function till we build the robot...
-}
-void trace(float thresh, int pwr, int direction, int sensor) //pass in thresh, power, direction of trace (left or right), and sensor to read from.
-{
-	float PWeight = 0.1; //PID Variables
-
-	float IWeight = 0.001;
-	float IFade = 0.01;
-	float ISum = 0.0;
-
-	float DWeight = 0.001;
-	float DPrev = 0;
-	float DSlope = 0;
-
-	float value;
-	float err;
-
-	while(1) //again...no idea when to return cause i cant read sensor values....
+	const float kP = 1.5;
+	const float kI = 1.5;
+	const float kD = 1.5;
+	float P, I, D, lastP;
+	float threshold = 0;
+	float dir; //1 is left, -1 is right
+	float lFirst = getDistance(leftDist);
+	float rFirst = getDistance(rightDist);
+	float lDist = clamp(lFirst,0,30);
+	float rDist = clamp(rFirst,0,30);
+	float adjust;
+	float tp = 20;
+	dir = lDist > rDist ? 1 : -1; //bias is set here
+	if (dir == 1)
 	{
-		value = getUltraSensorValue(sensor); //get current value and error
-		err = thresh - value;
-
-		motor[motorRight] = pwr + direction*(err*PWeight + ISum*IWeight + DSlope*DWeight); //Move based on PID
-		motor[motorLeft] = pwr - direction*(err*PWeight + ISum*IWeight + DSlope*DWeight);
-
-		ISum = err + ISum*IFade; //Update PID
-		DSlope = err - DPrev;
-		DPrev = err;
+		turnLeft(90);
+		middleFront.isLight = true;
+		while (getColor(middleFront) != cBlack)
+		{
+			P = getDistance(rightDist) - threshold;
+			I += P;
+			if (abs(P) < 1.5)
+				I = 0;
+			D = P - lastP;
+			adjust = P*kP + I*kI + D*kD;
+			motor[LMotor] = tp + adjust;
+			motor[RMotor] = tp - adjust;
+		}
+		goStraight(5);
+		motor[LMotor] = -tp;
+		motor[RMotor] = tp;
+		while (getColor(middleFront) == cBlack){}
+		while (getColor(middleFront) != cBlack){}
 	}
-}
-void obstacle(float thresh, int pwr) //pass in thresh for detection and trace, and a speed to trace
-{
-	if(getUltraSensorValue(frontUltra)<thresh) //if there is an obstacle
+	else
 	{
-		turn(-90); //turn
-		if(getUltraSensorValue(leftUltra)<thresh) //if there is a wall to the left (we assume there is no wall to the right)
+		turnRight(90);
+		middleFront.isLight = true;
+		while (getColor(middleFront) != cBlack)
 		{
-			turn(180); //turn
-			trace(thresh, pwr, 1, rightUltra); //start PID trace
+			P = getDistance(leftDist) - threshold;
+			I += P;
+			if (abs(P) < 1.5)
+				I = 0;
+			D = P - lastP;
+			adjust = P*kP + I*kI + D*kD;
+			motor[LMotor] = tp + adjust;
+			motor[RMotor] = tp - adjust;
 		}
-		else //no wall to left
-		{
-			trace(thresh, pwr, -1, leftUltra); //start PID trace
-		}
+		goStraight(5);
+		motor[LMotor] = tp;
+		motor[RMotor] = -tp;
+		while (getColor(middleFront) == cBlack){}
+		while (getColor(middleFront) != cBlack){}
 	}
 }
