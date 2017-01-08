@@ -25,12 +25,43 @@ function holePlace(between,holeSize) = between/2 + holeSize/2;
 function determineBetween(size,between) = (size - between)/2;
 
 //Right Motor
+
 translate ([0,-55, 0]) {
     difference() {
         translate([0,0,10]) {
             cube([190,5,50], center = true);
         }
         translate ([-90,0,4]) {
+            rotate ([90,0,0]) {
+                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            }
+        }
+        translate ([-90 + 15,0,4 + 15]) {
+            rotate ([90,0,0]) {
+                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            }
+        }
+         translate ([-90 + 7.5,0,4 + 15]) {
+            rotate ([90,0,0]) {
+                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            }
+        }
+         translate ([-90 + 22.5,0,4 + 15]) {
+            rotate ([90,0,0]) {
+                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            }
+        }
+         translate ([-90 + 55,0,4 -7.5]) {
+            rotate ([90,0,0]) {
+                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            }
+        }
+         translate ([-90 + 62.5,0,4 -7.5]) {
+            rotate ([90,0,0]) {
+                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            }
+        }
+         translate ([-90 + 70,0,4 -7.5]) {
             rotate ([90,0,0]) {
                 cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
             }
@@ -45,6 +76,36 @@ translate ([0,55, 0]) {
             cube([190,5,50], center = true);
         }
         translate ([-90,0,4]) {
+            rotate ([90,0,0]) {
+                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            }
+        }
+        translate ([-90 + 15,0,4 + 15]) {
+            rotate ([90,0,0]) {
+                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            }
+        }
+         translate ([-90 + 7.5,0,4 + 15]) {
+            rotate ([90,0,0]) {
+                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            }
+        }
+         translate ([-90 + 22.5,0,4 + 15]) {
+            rotate ([90,0,0]) {
+                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            }
+        }
+         translate ([-90 + 55,0,4 -7.5]) {
+            rotate ([90,0,0]) {
+                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            }
+        }
+         translate ([-90 + 62.5,0,4 -7.5]) {
+            rotate ([90,0,0]) {
+                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            }
+        }
+         translate ([-90 + 70,0,4 -7.5]) {
             rotate ([90,0,0]) {
                 cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
             }
