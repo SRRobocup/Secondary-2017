@@ -4,7 +4,7 @@ chassisWidth = 130;
 sensorHoleSize = 2.68;
 sensorDistanceBetween = 12.9;
 sensorSize = 20.65;
-legoHole = 4.75;
+legoHole = 4.8;
 motorLength = 107.8;
 arrayBetween = 7.215;
 arraySize = 72.53;
@@ -29,7 +29,7 @@ function determineBetween(size,between) = (size - between)/2;
 translate ([0,-55, 0]) {
     difference() {
         translate([0,0,10]) {
-            cube([190,5,50], center = true);
+            cube([190,5,75], center = true);
         }
         translate ([-90,0,4]) {
             rotate ([90,0,0]) {
@@ -73,7 +73,7 @@ translate ([0,-55, 0]) {
 translate ([0,55, 0]) {
     difference() {
         translate([0,0,10]) {
-            cube([190,5,50], center = true);
+            cube([190,5,75], center = true);
         }
         translate ([-90,0,4]) {
             rotate ([90,0,0]) {
