@@ -20,33 +20,37 @@ nxtWidth = 71.73;
 nxtDepth = 39.88;
 nxtDistToFirstHole = 10.97;
 nxtLengthToFirstHole = 6.35;
-
+//middle width is 105 mm
+//motor width is 40mm
+//gap between motors is therefore 25mm
+//nxt is 72 mm in width.
+//nxt leaves 16.5 mm gap on either side.
+//nxt holes start 2holes after that = 16mm
 function holePlace(between,holeSize) = between/2 + holeSize/2;
 function determineBetween(size,between) = (size - between)/2;
 
 //Right Motor
-
 translate ([0,-55, 0]) {
     difference() {
-        translate([0,0,10]) {
-            cube([190,5,75], center = true);
+        translate([0,0,30]) {
+            cube([190,5,105], center = true);
         }
         translate ([-90,0,4]) {
             rotate ([90,0,0]) {
                 cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
             }
         }
-        translate ([-90 + 15,0,4 + 15]) {
+        translate ([-90 + 16,0,4 + 15]) {
             rotate ([90,0,0]) {
                 cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
             }
         }
-         translate ([-90 + 7.5,0,4 + 15]) {
+         translate ([-90 + 8,0,4 + 15]) {
             rotate ([90,0,0]) {
                 cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
             }
         }
-         translate ([-90 + 22.5,0,4 + 15]) {
+         translate ([-90 + 24,0,4 + 15]) {
             rotate ([90,0,0]) {
                 cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
             }
@@ -56,12 +60,12 @@ translate ([0,-55, 0]) {
                 cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
             }
         }
-         translate ([-90 + 62.5,0,4 -7.5]) {
+         translate ([-90 + 63,0,4 -7.5]) {
             rotate ([90,0,0]) {
                 cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
             }
         }
-         translate ([-90 + 70,0,4 -7.5]) {
+         translate ([-90 + 71,0,4 -7.5]) {
             rotate ([90,0,0]) {
                 cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
             }
@@ -72,25 +76,25 @@ translate ([0,-55, 0]) {
 //Left Motor
 translate ([0,55, 0]) {
     difference() {
-        translate([0,0,10]) {
-            cube([190,5,75], center = true);
+        translate([0,0,30]) {
+            cube([190,5,105], center = true);
         }
         translate ([-90,0,4]) {
             rotate ([90,0,0]) {
                 cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
             }
         }
-        translate ([-90 + 15,0,4 + 15]) {
+        translate ([-90 + 16,0,4 + 15]) {
             rotate ([90,0,0]) {
                 cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
             }
         }
-         translate ([-90 + 7.5,0,4 + 15]) {
+         translate ([-90 + 8,0,4 + 15]) {
             rotate ([90,0,0]) {
                 cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
             }
         }
-         translate ([-90 + 22.5,0,4 + 15]) {
+         translate ([-90 + 24,0,4 + 15]) {
             rotate ([90,0,0]) {
                 cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
             }
@@ -100,16 +104,69 @@ translate ([0,55, 0]) {
                 cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
             }
         }
-         translate ([-90 + 62.5,0,4 -7.5]) {
+         translate ([-90 + 63,0,4 -7.5]) {
             rotate ([90,0,0]) {
                 cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
             }
         }
-         translate ([-90 + 70,0,4 -7.5]) {
+         translate ([-90 + 71,0,4 -7.5]) {
             rotate ([90,0,0]) {
                 cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
             }
         }
+    }
+}
+//nxtMount
+translate ([-85, 0, 50]) {
+   difference() {
+        translate([0,0,0]) {
+            cube([20,105,5], center = true);
+        }
+        translate ([0, -24, 0]) {
+            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+        }
+        translate ([0, -16, 0]) {
+            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+        }
+        translate ([0, -8, 0]) {
+            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+        }
+        translate ([0, 8, 0]) {
+            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+        }
+        translate ([0, 16, 0]) {
+            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+        }
+        translate ([0, 24, 0]) {
+            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+        }
+        
+    }
+}
+translate ([10, 0, 50]) {
+   difference() {
+        translate([0,0,0]) {
+            cube([20,105,5], center = true);
+        }
+        translate ([0, -24, 0]) {
+            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+        }
+        translate ([0, -16, 0]) {
+            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+        }
+        translate ([0, -8, 0]) {
+            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+        }
+        translate ([0, 8, 0]) {
+            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+        }
+        translate ([0, 16, 0]) {
+            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+        }
+        translate ([0, 24, 0]) {
+            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+        }
+        
     }
 }
 
