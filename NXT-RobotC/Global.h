@@ -167,7 +167,7 @@ float getDistance(LaserSensor sensor)
 	send[1] = ARDUINO_ADDRESS;
 	send[2] = sensor.address;
 	writeI2C(arduino,send);
-	delayMicroseconds(-1,1);
+	delayMicroseconds(145);
 	send[2] = 0;
 	writeI2C(arduino,send,receive,2);
 	ret = receive[1] << 8 | receive[0];
@@ -186,9 +186,6 @@ float getDistance(PingSensor sensor)
 	send[0] = 2;
 	send[1] = ARDUINO_ADDRESS;
 	send[2] = sensor.address;
-	writeI2C(arduino,send);
-	delayMicroseconds(-1,1);
-	send[2] = 0;
 	writeI2C(arduino,send,receive,2);
 	ret = receive[1] << 8 | receive[0];
 	return (float)ret / 29 / 2;
@@ -202,7 +199,7 @@ void getColorRGB(ColorSensor sensor, int& r, int& g, int& b)
 	send[1] = ARDUINO_ADDRESS;
 	send[2] = sensor.address;
 	writeI2C(arduino,send);
-	delayMicroseconds(40);
+	delayMicroseconds(465 + 55);
 	send[2] = 0;
 	writeI2C(arduino,send,receive,8);
 	r = receive[7] << 8 | receive[6];
