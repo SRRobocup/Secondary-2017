@@ -16,12 +16,12 @@ TCA9548A colors = TCA9548A();
 
 Adafruit_TCS34725 colorSensor = Adafruit_TCS34725();
 
-const int pingPin = 7;
+const int pingPins[] = {7,8,9};
 volatile uint16_t currentTag = 0;
 volatile uint8_t currentCommand = 0;
 volatile uint64_t data = 0;
 volatile uint8_t bytesToSend = 0;
-int pingBuffer = 0;
+int pingBuffer[] = {0,0,0};
 uint16_t red, blue, green, clear;
 bool status = false;
 
@@ -120,7 +120,7 @@ void loop() {
       bytesToSend = 2;
       break;
     case 0x45:
-      data = downLeft.readRangeSingleMillimeters();
+      data = downLeft.readRangeSingleMillimeters();c
       status = downLeft.timeoutOccurred();
       bytesToSend = 2;
       break;
@@ -130,17 +130,20 @@ void loop() {
       bytesToSend = 2;
       break;
     case 0x47:
-      data = pingBuffer;
-      break;
     case 0x48:
     case 0x49:
+      data = pingBuffer[currentTag - 0x47];
+      bytesToSend = 2;
+      break;
     case 0x50:
     case 0x51:
     case 0x52:
     case 0x53:
     case 0x54:
     case 0x55:
-      colors.select(currentTag - 0x48);
+    case 0x56:
+    case 0x57:
+      colors.select(currentTag - 0x50);
       colorSensor.getRawDataEx(&red,&blue,&green,&clear);
       data = red << 48 | blue << 32 | green << 16 | clear;
       bytesToSend = 8;
@@ -153,14 +156,15 @@ void loop() {
   }
   //reset tag
   currentTag = -1;
+  for (int i = 0; i < 3; i++) {
+    pinMode(pingPin[i], OUTPUT);
+    digitalWrite(pingPin[i], LOW);
+    delayMicroseconds(2);
+    digitalWrite(pingPin[i], HIGH);
+    delayMicroseconds(5);
+    digitalWrite(pingPin[i], LOW);
 
-  pinMode(pingPin, OUTPUT);
-  digitalWrite(pingPin, LOW);
-  delayMicroseconds(2);
-  digitalWrite(pingPin, HIGH);
-  delayMicroseconds(5);
-  digitalWrite(pingPin, LOW);
-
-  pinMode(pingPin, INPUT);
-  pingBuffer = pulseIn(pingPin, HIGH);
+    pinMode(pingPin[i], INPUT);
+    pingBuffer[i] = pulseIn(pingPin[i], HIGH);
+  }
 }
