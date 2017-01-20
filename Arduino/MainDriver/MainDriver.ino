@@ -5,14 +5,11 @@
 
 #define HIGH_SPEED
 
-VL53L0X front = VL53L0X(3);
-VL53L0X left = VL53L0X(4);
-VL53L0X right = VL53L0X(5);
+VL53L0X longRange = VL53L0X();
 
-VL6180X downLeft = VL6180X(6);
-VL6180X downRight = VL6180X(7);
+VL6180X shortRange = VL6180X();
 
-TCA9548A colors = TCA9548A();
+TCA9548A mux = TCA9548A();
 
 Adafruit_TCS34725 colorSensor = Adafruit_TCS34725();
 
@@ -32,27 +29,20 @@ void setup() {
   Wire.onRequest(requestEvent);
   TWBR = 12;
   // init all sensors
-  colors.select(0);
-  downLeft.init();
-  downRight.init();
-  front.init();
-  left.init();
-  right.init();
-  downLeft.configureDefault();
-  downLeft.setTimeout(500);
-  downRight.configureDefault();
-  downRight.setTimeout(500);
+  for (int i = 0; i < 5; i++) {
+    mux.select(i);
+    longRange.init();
+    shortRange.init();
+    colorSensor.init();
+  }
 #if defined HIGH_SPEED
   // reduce timing budget to 20 ms (default is about 33 ms)
-  front.setMeasurementTimingBudget(20000);
-  left.setMeasurementTimingBudget(20000);
-  right.setMeasurementTimingBudget(20000);
+  longRange.setMeasurementTimingBudget(20000);
 #elif defined HIGH_ACCURACY
   // increase timing budget to 200 ms
-  front.setMeasurementTimingBudget(200000);
-  left.setMeasurementTimingBudget(200000);
-  right.setMeasurementTimingBudget(200000);
+  longRange.setMeasurementTimingBudget(200000);
 #endif
+  mux.disable();
 }
 
 //get first byte and set to data and discard all other bytes
@@ -66,15 +56,21 @@ void receiveEvent(int bytesReceived) {
 
 //send data buffer
 void requestEvent() {
-  byte buff[8];
-  buff[7] = (data >> 56) & 0xFF;
-  buff[6] = (data >> 48) & 0xFF;
-  buff[5] = (data >> 40) & 0xFF;
-  buff[4] = (data >> 32) & 0xFF;
-  buff[3] = (data >> 24) & 0xFF;
-  buff[2] = (data >> 16) & 0xFF;
-  buff[1] = (data >> 8) & 0xFF;
-  buff[0] = (data) & 0xFF;
+  if(currentTag <= 0x57) {
+    byte buff[8];
+    buff[7] = (data >> 56) & 0xFF;
+    buff[6] = (data >> 48) & 0xFF;
+    buff[5] = (data >> 40) & 0xFF;
+    buff[4] = (data >> 32) & 0xFF;
+    buff[3] = (data >> 24) & 0xFF;
+    buff[2] = (data >> 16) & 0xFF;
+    buff[1] = (data >> 8) & 0xFF;
+    buff[0] = (data) & 0xFF;
+  } else {
+    buff[1] = (pingBuffer[currentTag - 0x58] >> 8) & 0xFF;
+    buff[0] = (pingBuffer[currentTag - 0x58]) & 0xFF;
+    bytesToSend = 2;
+  }
   Wire.write(buff,bytesToSend);
 }
 
@@ -84,49 +80,24 @@ void loop() {
     case 0x00:
       switch (currentCommand)
       {
-        case 0x00:
-          front.setMeasurementTimingBudget(20000);
-          break;
         case 0x01:
-          left.setMeasurementTimingBudget(20000);
-          break;
-        case 0x02:
-          right.setMeasurementTimingBudget(20000);
-          break;
-        case 0x03:
-          front.setMeasurementTimingBudget(200000);
-          break;
-        case 0x04:
-          left.setMeasurementTimingBudget(200000);
-          break;
-        case 0x05:
-          right.setMeasurementTimingBudget(200000);
+          mux.disable();
           break;
       }
       break;
     case 0x42:
-      data = left.readRangeSingleMillimeters();
-      status = left.timeoutOccurred();
-      bytesToSend = 2;
-      break;
     case 0x43:
-      data = front.readRangeSingleMillimeters();
-      status = front.timeoutOccurred();
-      bytesToSend = 2;
-      break;
     case 0x44:
-      data = right.readRangeSingleMillimeters();
-      status = right.timeoutOccurred();
+      mux.select(2 - 0x44);
+      data = longRange.readRangeSingleMillimeters();
+      status = (data == 8190);
       bytesToSend = 2;
       break;
     case 0x45:
-      data = downLeft.readRangeSingleMillimeters();c
-      status = downLeft.timeoutOccurred();
-      bytesToSend = 2;
-      break;
     case 0x46:
-      data = downRight.readRangeSingleMillimeters();
-      status = downRight.timeoutOccurred();
+      mux.select(4 - 0x46);
+      data = shortRange.readRangeSingleMillimeters();
+      status = (data == 8190);
       bytesToSend = 2;
       break;
     case 0x47:
@@ -143,7 +114,7 @@ void loop() {
     case 0x55:
     case 0x56:
     case 0x57:
-      colors.select(currentTag - 0x50);
+      mux.select(currentTag - 0x50);
       colorSensor.getRawDataEx(&red,&blue,&green,&clear);
       data = red << 48 | blue << 32 | green << 16 | clear;
       bytesToSend = 8;
