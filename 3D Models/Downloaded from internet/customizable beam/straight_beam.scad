@@ -33,6 +33,7 @@ module drawBeam()
                 cylinder(r=Width/2, h=Height);
                 }
 	}
+    /*
         union()
 	{
             for (i = [1:Holes])
@@ -50,6 +51,7 @@ module drawBeam()
                 }
             }
         }
+        */
     }
 }
 
