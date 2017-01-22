@@ -167,7 +167,7 @@ float getDistance(LaserSensor sensor)
 	send[1] = ARDUINO_ADDRESS;
 	send[2] = sensor.address;
 	writeI2C(arduino,send);
-	delayMicroseconds(145);
+	delayMicroseconds(145 + 55);
 	send[2] = 0;
 	writeI2C(arduino,send,receive,2);
 	ret = receive[1] << 8 | receive[0];

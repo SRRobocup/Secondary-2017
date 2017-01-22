@@ -49,3 +49,10 @@ void TCA9548A::select(uint8_t pin)
 	Wire.write(1 << pin);
 	Wire.endTransmission();  
 }
+
+void TCA9548::disable()
+{
+	Wire.beginTransmission(address);
+	Wire.write(0);
+	Wire.endTransmission();
+}

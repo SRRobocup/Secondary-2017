@@ -50,6 +50,7 @@ class TCA9548A {
  public:
   TCA9548A(uint8_t = TCA9548A_ADDRESS);
   void select(uint8_t);
+  void disable();
  private:
   uint8_t address;
 };
