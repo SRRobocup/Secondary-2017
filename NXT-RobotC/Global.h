@@ -1,6 +1,7 @@
 #ifndef __GLOBAL.H__
 #define __GLOBAL.H__
 #include "common.h"
+#include "mindsensors-lightsensorarray.h"
 #define ARDUINO_ADDRESS 0x08
 
 typedef enum eColor {
@@ -35,7 +36,7 @@ typedef struct sPingSensor {
 typedef tSensors SensorPort;
 typedef tMotor MotorPort;
 
-SensorPort arduino = S4;
+SensorPort arduino;
 MotorPort LMotor;
 MotorPort RMotor;
 LaserSensor leftDist;
@@ -49,6 +50,7 @@ ColorSensor leftFrontM;
 ColorSensor middleFront;
 ColorSensor rightFrontR;
 ColorSensor rightFrontM;
+SensorPort MSLSA;
 int forward = 30;
 int turnForward = 20;
 int turnBackward = -15;
@@ -225,6 +227,24 @@ Color getColor(ColorSensor sensor)
 	if ((float)green/red > sensor.greenRatio)
 		return cGreen;
 	return cGradient;
+}
+
+bool seeBlackArray()
+{
+	bool ret = false;
+	int threshold = 40;
+	ubyte values[8];
+	MSLSAreadSensors(MSLSA,values);
+	for (int i = 0; i < 8; i++)
+	{
+		ret = values[i] < threshold || ret;
+	}
+	return ret;
+}
+
+bool seeLine()
+{
+	return getColor(leftFrontL) != cWhite && getColor(leftFrontM) != cWhite && getColor(middleFront) != cWhite && getColor(rightFrontM) != cWhite && getColor(rightFrontR) != cWhite;
 }
 
 #endif

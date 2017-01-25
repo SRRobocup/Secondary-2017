@@ -5,6 +5,8 @@
 
 void setup()
 {
+	arduino = S4;
+	MSLSA = S3;
 	LMotor = motorA;
 	RMotor = motorC;
 	bMotorReflected[motorA] = true;
@@ -16,6 +18,7 @@ void setup()
 	downLeftDist.address = 0x45;
 	downRightDist.address = 0x46;
 	frontPing.address = 0x47;
+	MSLSAinit(MSLSA);
 	float values[25] = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 	generateColor(&leftFrontL,0x48,values[0],values[1],values[2],values[3],values[4],true);
 	generateColor(&leftFrontM,0x49,values[5],values[6],values[7],values[8],values[9],false);

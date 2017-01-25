@@ -1,4 +1,4 @@
-renderComplexity = 10;
+$fn = 100;
 chassisLength = 190;
 chassisWidth = 130;
 sensorHoleSize = 2.68;
@@ -37,37 +37,37 @@ translate ([0,-55, 0]) {
         }
         translate ([-90,0,4]) {
             rotate ([90,0,0]) {
-                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+                cylinder(20,d = legoHole,center = true);
             }
         }
         translate ([-90 + 16,0,4 + 15]) {
             rotate ([90,0,0]) {
-                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+                cylinder(20,d = legoHole,center = true);
             }
         }
          translate ([-90 + 8,0,4 + 15]) {
             rotate ([90,0,0]) {
-                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+                cylinder(20,d = legoHole,center = true);
             }
         }
          translate ([-90 + 24,0,4 + 15]) {
             rotate ([90,0,0]) {
-                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+                cylinder(20,d = legoHole,center = true);
             }
         }
          translate ([-90 + 55,0,4 -7.5]) {
             rotate ([90,0,0]) {
-                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+                cylinder(20,d = legoHole,center = true);
             }
         }
          translate ([-90 + 63,0,4 -7.5]) {
             rotate ([90,0,0]) {
-                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+                cylinder(20,d = legoHole,center = true);
             }
         }
          translate ([-90 + 71,0,4 -7.5]) {
             rotate ([90,0,0]) {
-                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+                cylinder(20,d = legoHole,center = true);
             }
         }
     }
@@ -81,37 +81,37 @@ translate ([0,55, 0]) {
         }
         translate ([-90,0,4]) {
             rotate ([90,0,0]) {
-                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+                cylinder(20,d = legoHole,center = true);
             }
         }
         translate ([-90 + 16,0,4 + 15]) {
             rotate ([90,0,0]) {
-                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+                cylinder(20,d = legoHole,center = true);
             }
         }
          translate ([-90 + 8,0,4 + 15]) {
             rotate ([90,0,0]) {
-                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+                cylinder(20,d = legoHole,center = true);
             }
         }
          translate ([-90 + 24,0,4 + 15]) {
             rotate ([90,0,0]) {
-                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+                cylinder(20,d = legoHole,center = true);
             }
         }
          translate ([-90 + 55,0,4 -7.5]) {
             rotate ([90,0,0]) {
-                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+                cylinder(20,d = legoHole,center = true);
             }
         }
          translate ([-90 + 63,0,4 -7.5]) {
             rotate ([90,0,0]) {
-                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+                cylinder(20,d = legoHole,center = true);
             }
         }
          translate ([-90 + 71,0,4 -7.5]) {
             rotate ([90,0,0]) {
-                cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+                cylinder(20,d = legoHole,center = true);
             }
         }
     }
@@ -123,22 +123,22 @@ translate ([-85, 0, 50]) {
             cube([20,105,5], center = true);
         }
         translate ([0, -24, 0]) {
-            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            cylinder(20,d = legoHole,center = true);
         }
         translate ([0, -16, 0]) {
-            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            cylinder(20,d = legoHole,center = true);
         }
         translate ([0, -8, 0]) {
-            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            cylinder(20,d = legoHole,center = true);
         }
         translate ([0, 8, 0]) {
-            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            cylinder(20,d = legoHole,center = true);
         }
         translate ([0, 16, 0]) {
-            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            cylinder(20,d = legoHole,center = true);
         }
         translate ([0, 24, 0]) {
-            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            cylinder(20,d = legoHole,center = true);
         }
         
     }
@@ -149,22 +149,22 @@ translate ([10, 0, 50]) {
             cube([20,105,5], center = true);
         }
         translate ([0, -24, 0]) {
-            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            cylinder(20,d = legoHole,center = true);
         }
         translate ([0, -16, 0]) {
-            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            cylinder(20,d = legoHole,center = true);
         }
         translate ([0, -8, 0]) {
-            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            cylinder(20,d = legoHole,center = true);
         }
         translate ([0, 8, 0]) {
-            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            cylinder(20,d = legoHole,center = true);
         }
         translate ([0, 16, 0]) {
-            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            cylinder(20,d = legoHole,center = true);
         }
         translate ([0, 24, 0]) {
-            cylinder(20,d = legoHole,center = true,$fn=renderComplexity);
+            cylinder(20,d = legoHole,center = true);
         }
         
     }
@@ -239,7 +239,7 @@ translate ([70,0,0]) {
         }
         translate ([0,0,3]) {
             rotate([90,0,0]) {
-                cylinder(130,d = legoHole, center = true,$fn=renderComplexity);
+                cylinder(130,d = legoHole, center = true);
             }
         }
     }
@@ -250,7 +250,7 @@ translate ([70,0,3]) {
     difference () {
         union () {
             rotate([90,0,0]) {
-                cylinder(15,r=5, center = true,$fn=renderComplexity);
+                cylinder(15,r=5, center = true);
             }
             translate ([0,-5,-5]) {
                 cube([15,10,10]);
@@ -266,11 +266,11 @@ translate ([70,0,3]) {
             }
         }
         rotate ([90,0,0]) {
-            cylinder(130,d = legoHole, center = true,$fn=renderComplexity);
+            cylinder(130,d = legoHole, center = true);
         }
         translate([10,0,0]) {
             rotate ([90,0,0]) {
-                cylinder(10,d = legoHole, center = true,$fn=renderComplexity);
+                cylinder(10,d = legoHole, center = true);
             }
         }
         translate([35,holePlace(sensorDistanceBetween,sensorHoleSize),0]) {
