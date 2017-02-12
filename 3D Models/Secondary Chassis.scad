@@ -1,5 +1,5 @@
-$fn = 100;
-include "Global.scad"
+$fn = 10;
+include <Global.scad>
 //middle width is 105 mm
 //motor width is 40mm
 //gap between motors is therefore 25mm
