@@ -1,5 +1,5 @@
 $fn = 10;
-include <Global.scad>
+include <Global.scad>;
 //middle width is 105 mm
 //motor width is 40mm
 //gap between motors is therefore 25mm
@@ -176,6 +176,7 @@ translate ([90,0,-12.5]) {
 }
 
 //Light Array Mount
+
 translate ([70,0,-12.5]) {
     difference() {
         union () {
