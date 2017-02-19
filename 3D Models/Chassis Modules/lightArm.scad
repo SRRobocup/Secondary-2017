@@ -5,7 +5,7 @@ $fn = 25;
 renderComplexity = 10;
 chassisLength = 190;
 chassisWidth = 130;
-sensorHoleSize = 2.68;
+sensorHoleSize = 2.3;
 sensorDistanceBetween = 12.9;
 sensorSize = 20.65;
 legoHole = 4.8;
@@ -44,14 +44,16 @@ translate ([0,0,3]) {
                 cube([15,10,10]);
             }
             translate ([10,-5,0]) {
-                cube([27.5,10,5]);
+                cube([42.5,10,5]);
             }
+            /*
             translate([35,0,-5]) {
                 cube([5,5,18],center = true);
             }
             translate([35,0,-15.5]) {
                 cube([5,20,5],center = true);
             }
+            */
         }
         //rotate ([90,0,0]) {
             //cylinder(130,d = legoHole, center = true,$fn=renderComplexity);
@@ -71,12 +73,14 @@ translate ([0,0,3]) {
                 cylinder(25,d = legoHole, center = true,$fn=renderComplexity);
             }
         }
-        translate([35,holePlace(sensorDistanceBetween,sensorHoleSize),0]) {
+        
+        translate([50,1.8,0]) {
             cylinder(130,d = sensorHoleSize,center = true);
         }
-        translate([35,-holePlace(sensorDistanceBetween,sensorHoleSize),0]) {
+        translate([50,-1.8,0]) {
             cylinder(130,d = sensorHoleSize,center = true);
         }
+        
     }
 }
 

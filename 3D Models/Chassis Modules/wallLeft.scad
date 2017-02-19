@@ -1,7 +1,7 @@
 include <MakeHoles.scad>
 lH = -3.9;
 lW = -3.65; 
-$fn = 25;
+$fn = 15;
 renderComplexity = 10;
 chassisLength = 190;
 chassisWidth = 130;
