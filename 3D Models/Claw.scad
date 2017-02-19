@@ -3,8 +3,8 @@ $fn = 50;
 module drawClaw(height) {
     difference()
     {
-        cylinder(h = height,r = 58, center = true);
-        translate([0,5,0])
+        cylinder(h = height,r = 60, center = true);
+        translate([0,0,0])
         {
             cylinder(h = height,r = 52, center = true);
         }
@@ -18,16 +18,42 @@ module drawClaw(height) {
         }
     }
 }
-union()
-{
-    drawClaw(15);
-    translate ([-20,56,0]) {
-        cylinder(h = 40, d = legoHole, center = true);
+translate ([-10,0,0])
+    difference()  {
+            union()
+            {
+                drawClaw(15);
+                translate ([-20,52,0]) {
+                    cylinder(h = 40, d = legoHole, center = true);
+                }
+                translate([-5,-75,-7.5]) {
+                    cube([5,20,15]);
+                }
+                translate ([-10,-56,0]) {
+                    cylinder(h = 40, d = legoHole, center = true);
+                }
+            }
     }
-    translate([-5,-50,-7.5]) {
-        cube([5,20,15]);
+
+translate([10,0,0])
+    mirror([1,0,0])
+    {
+        difference()  {
+            union()
+            {
+                drawClaw(15);
+                translate ([-20,52,0]) {
+                    cylinder(h = 40, d = legoHole, center = true);
+                }
+                translate([-5,-75,-7.5]) {
+                    cube([5,20,15]);
+                }
+                translate ([-10,-56,0]) {
+                    cylinder(h = 40, d = legoHole, center = true);
+                }
+            }
+        }
     }
-}
 
 //translate([-100,-2000,-1000]) 
 //{
