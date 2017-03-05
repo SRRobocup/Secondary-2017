@@ -1,0 +1,41 @@
+************************************************************************************************************
+************************************************************************************************************
+1/29/2017 - Update 0.5
+
+-A plan for the chasis is now done and has been modeled in OpenScad.
+-Need to split the chasis into different modules for printing.
+-Printed a block with three different hole sizes for testing different kinds of screws to hold the model 
+together.
+
+************************************************************************************************************
+************************************************************************************************************
+2/5/2017 - Update 0.6
+
+-Went to Home Depot and found a good thin screw size that can hold the model together.
+-All three hole sizes previously printed were too big for the new screw.
+-Printed a new block that would snugly hold the screw.
+-Found a function online for printing lego technic peice.
+-Printed a block using the funcion and found that the piece snugly fitted into the hole.
+-Minor printer issues this week.
+
+************************************************************************************************************
+************************************************************************************************************
+2/12/2017 - Update 0.7
+
+-Worked on the design for the NXT mount. Using both hole sizes to make holes.
+-Printed NXT mount.
+-NXT fit into the mount.
+-Modified the three components of the light sensor mount with the new hole sizes and printed.
+
+************************************************************************************************************
+************************************************************************************************************
+2/12/2017 - Update 0.8
+
+-Filed all printed parts. Holes had to be filed so that lego pegs would fit. The arm had to be sanded so
+that it moved smoothly.
+-The sensor mount at the front was assembled and one portion of the frame was also added. The model fit 
+together snugly. 
+-Walls were designed and printed out. Will be attended to next week.
+
+************************************************************************************************************
+************************************************************************************************************

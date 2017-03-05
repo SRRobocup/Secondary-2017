@@ -29,7 +29,7 @@ nxtLengthToFirstHole = 6.35;
 //nxt is 72 mm in width.
 //nxt leaves 16.5 mm gap on either side.
 //nxt holes start 2holes after that = 16mm
-$fn = 25;
+$fn = 10;
 function holePlace(between,holeSize) = between/2 + holeSize/2;
 function determineBetween(size,between) = (size - between)/2;
 
@@ -37,7 +37,7 @@ function determineBetween(size,between) = (size - between)/2;
 translate ([0, 0, 0]) {
    difference() {
         translate([0,0,0]) {
-            cube([10,105,7.799], center = true);
+            cube([10,110,7.799], center = true);
         }
         /*
         translate ([0, -24, 0]) {
@@ -67,12 +67,12 @@ translate ([0, 0, 0]) {
         //1.8 cm between 2.3 = diameter
         translate ([-1.8, 0, 0]) {
             rotate([90,0,0]){
-                cylinder(105,d = 2.3,center = true);
+                cylinder(110,d = 2.3,center = true);
             }
         }
         translate ([1.8, 0, 0]) {
             rotate([90,0,0]){
-                cylinder(105,d = 2.3,center = true);
+                cylinder(110,d = 2.3,center = true);
             }
         }
     }   

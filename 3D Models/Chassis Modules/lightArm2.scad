@@ -35,9 +35,9 @@ difference()
 { 
 union()
 {
-    translate([0,0,0]) 
+    translate([0,0,-2]) 
     {
-        cube([5,7.5,18],center = true);
+        cube([5,7.5,14],center = true);
     }
     translate([0,0,-10.5]) 
     {

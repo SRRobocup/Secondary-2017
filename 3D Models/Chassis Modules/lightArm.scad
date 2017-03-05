@@ -38,13 +38,13 @@ translate ([0,0,3]) {
     difference () {
         union () {
             rotate([90,0,0]) {
-                cylinder(15,r=5, center = true,$fn=renderComplexity);
+                cylinder(15,r=5, center = true);
             }
             translate ([0,-5,-5]) {
                 cube([15,10,10]);
             }
             translate ([10,-5,0]) {
-                cube([42.5,10,5]);
+                cube([35.5,10,5]);
             }
             /*
             translate([35,0,-5]) {
@@ -68,16 +68,17 @@ translate ([0,0,3]) {
                 drawBeam(1);
             }
         }
+        
         translate([10,0,0]) {
             rotate ([90,0,0]) {
                 cylinder(25,d = legoHole, center = true,$fn=renderComplexity);
             }
         }
         
-        translate([50,1.8,0]) {
+        translate([43,1.8,0]) {
             cylinder(130,d = sensorHoleSize,center = true);
         }
-        translate([50,-1.8,0]) {
+        translate([43,-1.8,0]) {
             cylinder(130,d = sensorHoleSize,center = true);
         }
         
