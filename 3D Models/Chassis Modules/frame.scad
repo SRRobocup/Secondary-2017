@@ -239,7 +239,7 @@ difference()
                 drawBeam(7);
             }
         }
-        translate ([-85 + 8*9,-lH,0]) {
+        translate ([-85 + 8*9 - 4,-lH,0]) {
             rotate([90,0,0]){
                 drawBeam(7);
             }
