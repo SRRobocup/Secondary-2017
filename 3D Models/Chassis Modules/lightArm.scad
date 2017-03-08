@@ -1,11 +1,9 @@
 include <MakeHoles.scad>
 lH = -3.9;
 lW = -3.65; 
-$fn = 25;
 renderComplexity = 10;
 chassisLength = 190;
 chassisWidth = 130;
-sensorHoleSize = 2.3;
 sensorDistanceBetween = 12.9;
 sensorSize = 20.65;
 legoHole = 4.8;
@@ -33,7 +31,15 @@ nxtLengthToFirstHole = 6.35;
 function holePlace(between,holeSize) = between/2 + holeSize/2;
 function determineBetween(size,between) = (size - between)/2;
 
-//arm for middle light sensor
+//*********************************************//
+//IMPORTANT//
+sensorHoleSize = 2.3 + 0.1;
+$fn = 4;
+//IF PRINTING $fn = 25;//
+//IF ETHAN, sensorHoleSize = 2.3 + 0.1;//
+//ELSE, sensorHoleSize = 2.3;//
+//*********************************************//
+
 translate ([0,0,3]) {
     difference () {
         union () {
@@ -71,7 +77,7 @@ translate ([0,0,3]) {
         
         translate([10,0,0]) {
             rotate ([90,0,0]) {
-                cylinder(25,d = legoHole, center = true,$fn=renderComplexity);
+                cylinder(25,d = legoHole, center = true);
             }
         }
         

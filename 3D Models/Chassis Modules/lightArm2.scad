@@ -1,11 +1,9 @@
 include <MakeHoles.scad>
 lH = -3.9;
 lW = -3.65; 
-$fn = 25;
 renderComplexity = 10;
 chassisLength = 190;
 chassisWidth = 130;
-sensorHoleSize = 2.3;
 sensorDistanceBetween = 12.9;
 sensorSize = 20.65;
 legoHole = 4.8;
@@ -30,6 +28,16 @@ nxtLengthToFirstHole = 6.35;
 //nxt is 72 mm in width.
 function holePlace(between,holeSize) = between/2 + holeSize/2;
 function determineBetween(size,between) = (size - between)/2;
+
+//*********************************************//
+//IMPORTANT//
+sensorHoleSize = 2.3 + 0.1;
+$fn = 4;
+//IF PRINTING $fn = 25;//
+//IF ETHAN, sensorHoleSize = 2.3 + 0.1;//
+//ELSE, sensorHoleSize = 2.3;//
+//*********************************************//
+
 rotate([0,90,0]){
 difference()
 { 

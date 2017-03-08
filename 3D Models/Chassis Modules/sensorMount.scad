@@ -3,6 +3,16 @@ height = 12.7;
 holeGap = 12.7;
 borderT = 2.5;
 buff = 0.25;
+
+//*********************************************//
+//IMPORTANT//
+sensorHoleSize = 2.3 + 0.1;
+$fn = 4;
+//IF PRINTING $fn = 25;//
+//IF ETHAN, sensorHoleSize = 2.3 + 0.1;//
+//ELSE, sensorHoleSize = 2.3;//
+//*********************************************//
+
 difference()
 {
     union()
@@ -33,42 +43,42 @@ difference()
     {
         rotate([90,0,90])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([0, -1.8, 0])
     {
         rotate([90,0,90])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([0, 1.8, -height/2 + 1.5])
     {
         rotate([90,0,90])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([0, -1.8, -height/2 + 1.5])
     {
         rotate([90,0,90])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([0, holeGap/2, -height/2 + 1.5])
     {
         rotate([90,0,90])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([0,-holeGap/2 , -height/2 + 1.5])
     {
         rotate([90,0,90])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
 }

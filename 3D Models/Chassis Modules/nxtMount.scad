@@ -4,7 +4,6 @@ lW = -3.65;
 renderComplexity = 10;
 chassisLength = 190;
 chassisWidth = 130;
-sensorHoleSize = 2.68;
 sensorDistanceBetween = 12.9;
 sensorSize = 20.65;
 legoHole = 4.8;
@@ -33,11 +32,19 @@ $fn = 10;
 function holePlace(between,holeSize) = between/2 + holeSize/2;
 function determineBetween(size,between) = (size - between)/2;
 
-//nxtMount
+//*********************************************//
+//IMPORTANT//
+sensorHoleSize = 2.3 + 0.1;
+$fn = 4;
+//IF PRINTING $fn = 25;//
+//IF ETHAN, sensorHoleSize = 2.3 + 0.1;//
+//ELSE, sensorHoleSize = 2.3;//
+//*********************************************//
+
 translate ([0, 0, 0]) {
    difference() {
         translate([0,0,0]) {
-            cube([10,110,7.799], center = true);
+            cube([10,107,7.799], center = true);
         }
         /*
         translate ([0, -24, 0]) {
@@ -64,15 +71,15 @@ translate ([0, 0, 0]) {
                 drawBeam(7);
             }
         }
-        //1.8 cm between 2.3 = diameter
+        //1.8 cm between sensorHoleSize = diameter
         translate ([-1.8, 0, 0]) {
             rotate([90,0,0]){
-                cylinder(110,d = 2.3,center = true);
+                cylinder(110,d = sensorHoleSize,center = true);
             }
         }
         translate ([1.8, 0, 0]) {
             rotate([90,0,0]){
-                cylinder(110,d = 2.3,center = true);
+                cylinder(110,d = sensorHoleSize,center = true);
             }
         }
     }   

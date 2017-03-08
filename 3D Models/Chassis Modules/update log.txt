@@ -39,3 +39,22 @@ together snugly.
 
 ************************************************************************************************************
 ************************************************************************************************************
+2/26/2017 - Update 0.9
+
+-The entire bot was assembled with the first trial of the walls. The motors and NXT were attached.
+-Several issues were noted:
+The wheels did not touch the ground.
+The NXT was mounted too low, more space would be needed for the Arduino components.
+There was no room for the light array in the spot that it was intended to go.
+-A final set of walls were printed and will be attended to next week.
+
+************************************************************************************************************
+************************************************************************************************************
+3/5/2017 - Update 1.0
+
+-The entire bot was assembled today!
+-The bot fit together nicely, and only minor adjustments will be needed.
+-Designed long-range sensor mount. 
+-Made several small adjustments to some models, will give to Ethan for printing.
+************************************************************************************************************
+************************************************************************************************************

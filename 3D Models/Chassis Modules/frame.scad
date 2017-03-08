@@ -1,9 +1,18 @@
 include <MakeHoles.scad>
 lH = -3.9;
 lW = -3.65; 
-$fn = 4;
 move = -60;
 sliceSize = 10;
+
+//*********************************************//
+//IMPORTANT//
+sensorHoleSize = 2.3 + 0.1;
+$fn = 4;
+//IF PRINTING $fn = 25;//
+//IF ETHAN, sensorHoleSize = 2.3 + 0.1;//
+//ELSE, sensorHoleSize = 2.3;//
+//*********************************************//
+
 difference()
 {
     union()
@@ -17,210 +26,210 @@ difference()
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move + 1.8, 0, 20])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move - 1.8 + 12*8, 0, 20])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move + 1.8 + 12*8, 0, 20])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move - 1.8, 0, 30])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move + 1.8, 0, 30])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move - 1.8 + 12*8, 0, 30])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move + 1.8 + 12*8, 0, 30])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move - 1.8, 0, 40])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move + 1.8, 0, 40])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move - 1.8 + 12*8, 0, 40])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move + 1.8 + 12*8, 0, 40])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move - 1.8 + 16*8, 0, -22])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move + 1.8 + 16*8, 0, -22])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move - 1.8 + 16*8, 0, -32])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move + 1.8 + 16*8, 0, -32])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move - 1.8 + 16*8, 0, -37])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move + 1.8 + 16*8, 0, -37])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move - 1.8 + 16*8, 0, 20])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move + 1.8 + 16*8, 0, 20])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move - 1.8 + 16*8, 0, 30])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move + 1.8 + 16*8, 0, 30])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move - 1.8 + 16*8, 0, 40])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move + 1.8 + 16*8, 0, 40])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move - 1.8 + 6*8, 0, 20])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move + 1.8 + 6*8, 0, 20])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move - 1.8 + 6*8, 0, 30])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move + 1.8 + 6*8, 0, 30])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move - 1.8 + 6*8, 0, 40])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([move + 1.8 + 6*8, 0, 40])
     {
         rotate([90,0,0])
         {   
-            cylinder(d = 2.3,h = 10, center = true);
+            cylinder(d = sensorHoleSize,h = 10, center = true);
         }
     }
     translate([25, 0, -33])

@@ -2,12 +2,10 @@
 include <MakeHoles.scad>
 lH = -3.9;
 lW = -3.65;  
-$fn = 15;
 renderComplexity = 10;
 renderComplexity = 10;
 chassisLength = 190;
 chassisWidth = 130;
-sensorHoleSize = 2.3;
 sensorDistanceBetween = 12.9;
 sensorSize = 20.65;
 legoHole = 4.8;
@@ -35,15 +33,22 @@ nxtLengthToFirstHole = 6.35;
 function holePlace(between,holeSize) = between/2 + holeSize/2;
 function determineBetween(size,between) = (size - between)/2;
 
-//Light Array Mount
-//x translated 70 
+//*********************************************//
+//IMPORTANT//
+sensorHoleSize = 2.3 + 0.1;
+$fn = 15;
+//IF PRINTING $fn = 25;//
+//IF ETHAN, sensorHoleSize = 2.3 + 0.1;//
+//ELSE, sensorHoleSize = 2.3;//
+//*********************************************//
+
 translate ([0,0,-12.5]) 
 {
     difference() 
     {
         union () 
         {
-            cube([10,110,5],center = true);
+            cube([10,107,5],center = true);
             translate([5,-17.5,-2.5]) 
             {
                 cube([10,35,10]);
@@ -62,7 +67,7 @@ translate ([0,0,-12.5])
             }
             
         }
-        
+        cube([10, 15, 10],center = true);
         translate ([10,0,7]) 
         {
             rotate([90,0,0]) 
@@ -83,14 +88,14 @@ translate ([0,0,-12.5])
         {
             rotate([90,0,0])
             {
-                cylinder(120,d = 2.3,center = true);
+                cylinder(120,d = sensorHoleSize,center = true);
             }          
         }
         translate ([-1.8, 0, -12.5 + 12.5]) 
         {
             rotate([90,0,0])
             {
-                cylinder(120,d = 2.3,center =            true);
+                cylinder(120,d = sensorHoleSize,center =            true);
             }
         }
         translate([-7,-40,lH + 1.4])
@@ -128,21 +133,21 @@ translate ([0,0,0])
         {
             rotate([90,0,0])
             {
-                cylinder(120,d = 2.3,center = true);
+                cylinder(120,d = sensorHoleSize,center = true);
             }          
         }
         translate ([-1.8, 0, -12.5]) 
         {
             rotate([90,0,0])
             {
-                cylinder(120,d = 2.3,center =            true);
+                cylinder(120,d = sensorHoleSize,center =            true);
             }
         }
     }
 }
 translate ([20,0,-12.5]) {
     difference() {
-        cube([10,110,5],center = true);
+        cube([10,107,5],center = true);
         for (i = [0:1])
             translate ([0,i*sensorSize+15,0]) {
                 translate([0,holePlace(sensorDistanceBetween,sensorHoleSize),0]) {
@@ -165,14 +170,14 @@ translate ([20,0,-12.5]) {
         {
             rotate([90,0,0])
             {
-                cylinder(120,d = 2.3,center = true);
+                cylinder(120,d = sensorHoleSize,center = true);
             }          
         }
         translate ([-1.8, 0, 0]) 
         {
             rotate([90,0,0])
             {
-                cylinder(120,d = 2.3,center =            true);
+                cylinder(120,d = sensorHoleSize,center =            true);
             }
         }
     }
