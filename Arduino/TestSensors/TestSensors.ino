@@ -15,15 +15,18 @@ void setup() {
   Serial.begin(115200);
   Wire.begin(); 
 
-//digitalWrite(A4,LOW);
-//digitalWrite(A5,LOW);
-  //TWBR = 12;
+//  digitalWrite(A4,LOW);
+//  digitalWrite(A5,LOW);
+//  TWBR = 12; 
   // init all sensors
 
-  
+  Serial.println("BEGIN");
   for (int i = 0; i < 5; i++) {
-    mux.select(i);
+    Serial.print("ERROR: "); Serial.println(mux.select(i));
+    Serial.flush();
     colorSensor.begin();
+    Serial.print("Color Sensor "); Serial.print(i); Serial.println(" Begun");
+    Serial.flush();
   }
   for (int i = 5; i < 8; i++) {
     mux.select(i);
@@ -32,11 +35,12 @@ void setup() {
     longRange.setMeasurementTimingBudget(20000);
   }
   Serial.println("Done init");
-//  mux.disable();
+  Serial.print("ERROR: "); Serial.println(mux.disable());
+  Serial.flush();
 }
 
 void loop() {
-  uint16_t r,g,b,c,dist;
+  uint16_t r = 0,g = 0,b = 0,c = 0,dist;
   for (int i = 0; i < 8; i++) {
     mux.select(i);
     if (i < 5) {
@@ -51,5 +55,5 @@ void loop() {
       Serial.print(": "); Serial.println(longRange.readRangeSingleMillimeters());
     }
   }
-  mux.disable();
+  delay(500);
 }

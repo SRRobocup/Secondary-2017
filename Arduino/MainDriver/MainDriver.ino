@@ -1,9 +1,11 @@
 #include <TCA9548A.h>
 #include <Adafruit_TCS34725.h>
+#include "C:\Users\ethan_000\Documents\Git Repos\RCJ Secondary 2017\Register.h"
 
 #include <VL53L0X.h>
 
 #define HIGH_SPEED
+#define DEBUG
 
 VL53L0X longRange = VL53L0X();
 
@@ -16,17 +18,16 @@ volatile uint16_t currentTag = 0;
 volatile uint8_t currentCommand = 0;
 volatile uint8_t bytesToSend = 0;
 volatile byte buff[8] = {0,0,0,0,0,0,0,0};
+volatile byte lastSent[8] = {0,0,0,0,0,0,0,0};
 int pingBuffer[] = {1,2,3};
 uint16_t red, blue, green, clear;
-bool status = false;
+bool set = false;
 
 void setup() {
   Serial.begin(115200);
   Wire.begin(0x08 >> 1); 
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
-
-return;
 
 //  TWBR = 12;
   // init all sensors
@@ -50,28 +51,29 @@ return;
 //  longRange.setMeasurementTimingBudget(200000);
 //#endif
 //  longRange.startContinuous();
-  Serial.print("ERROR CODE: ");
+  Serial.print("START CODE: ");
   Serial.println(mux.disable());
   //mux.select(7);
 }
 
 //get first byte and set to data and discard all other bytes
 void receiveEvent(int bytesReceived) {
-  int temp;
   currentTag = Wire.read();
-  for (int i = 1; i < bytesReceived; i++) {
+  for (int i = 1; Wire.available(); i++) {
     currentCommand = Wire.read();
   }
 }
 
 //send data buffer
 void requestEvent() {
-  byte buf[] = {0x42};
-  Wire.write(buf,1);
-return;
+//  byte buf[] = {0x42};
+//  Wire.write(buf,1);
+//return;
   byte realBuff[8];
-  for (int i = 0; i < 8; i++)
+  for (int i = 0; i < 8; i++) {
     realBuff[i] = buff[i];
+//    lastSent[i] = buff[i];
+  }
   Wire.write(realBuff,bytesToSend);
 }
 
@@ -82,8 +84,8 @@ void flushBuffer() {
 }
 
 void split(volatile byte* buff, int x) {
-  buff[0] = (x >> 8) & 0xFF;
-  buff[1] = x & 0xFF;
+  buff[0] = lowByte(x);
+  buff[1] = highByte(x);
 }
 
 void printArr(volatile byte* buff, int n) {
@@ -93,10 +95,9 @@ void printArr(volatile byte* buff, int n) {
 }
 
 void loop() {
-
   //based on read from receive event, gather data from sensors
   switch (currentTag) {
-    case 0x00:
+    case COMMAND_REG:
       switch (currentCommand)
       {
         case 0x02:
@@ -110,14 +111,16 @@ void loop() {
           break;
       }
       break;
-    case 0x42:
-    case 0x43:
-    case 0x44:
-      mux.select(5 + (currentCommand - 0x42));
-      split(&buff[0], longRange.readRangeSingleMillimeters());
+    case LEFT_LASER:
+    case FRONT_LASER:
+    case RIGHT_LASER:
+      mux.select(5 + (currentTag - LEFT_LASER));
+      split(&buff[0], longRange.readRangeContinuousMillimeters());
 //      status = (data == 8190);
       bytesToSend = 2;
       mux.disable();
+      currentTag = -1;
+      set = true;
       break;
 //    case 0x45:
 //    case 0x46:
@@ -126,26 +129,37 @@ void loop() {
 //      status = (data == 8190);
 //      bytesToSend = 2;
 //      break;
-    case 0x47:
-    case 0x48:
-    case 0x49:
-      split(&buff[0], pingBuffer[currentTag - 0x47]);
+    case LEFT_PING:
+    case FRONT_PING:
+    case RIGHT_PING:
+      split(&buff[0], pingBuffer[currentTag - LEFT_PING]);
       bytesToSend = 2;
       mux.disable();
+      currentTag = -1;
+      set = true;
       break;
-    case 0x50:
-    case 0x51:
-    case 0x52:
-    case 0x53:
-    case 0x54:
-      mux.select(currentTag - 0x50);
+    case LEFT_FRONT:
+    case LEFT_MIDDLE:
+    case MIDDLE_FRONT:
+    case RIGHT_MIDDLE:
+    case RIGHT_FRONT:
+      mux.select(currentTag - LEFT_FRONT);
       colorSensor.getRawDataEx(&red,&blue,&green,&clear);
+      #ifdef DEBUG
+        Serial.print(currentTag, HEX); Serial.print(": ");
+        Serial.print(red); Serial.print(" ");
+        Serial.print(green); Serial.print(" ");
+        Serial.print(blue); Serial.print(" ");
+        Serial.print(clear); Serial.println();
+      #endif
       split(&buff[0], clear);
-      split(&buff[2], green);
-      split(&buff[4], blue);
+      split(&buff[2], blue);
+      split(&buff[4], green);
       split(&buff[6], red);
       bytesToSend = 8;
       mux.disable();
+      currentTag = -1;
+      set = true;
       break;
   }
   //if no convergence, set to ridiculous number
@@ -155,13 +169,16 @@ void loop() {
 //    byte
 //    status = false;
 //  }
-  if (currentTag != -1) {
+  if (set) {
+    Serial.print("SENT TAG: ");
     Serial.print(currentTag, HEX);
-    Serial.print(" , ");
+    Serial.print(" , DATA: ");
     printArr(buff,bytesToSend);
+    set = false;
   }
+//  if (lastSent[0] != 0)
+//    printArr(lastSent,8);
   //reset tag
-  currentTag = -1;
 //  Serial.println(bytesToSend);
   if (Serial.available() > 1)
   {

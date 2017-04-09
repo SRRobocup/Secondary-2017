@@ -2,6 +2,7 @@
 #define __GLOBAL.H__
 #include "common.h"
 #include "mindsensors-lightsensorarray.h"
+#include "C:\Users\ethan_000\Documents\Git Repos\RCJ Secondary 2017\Register.h"
 #define ARDUINO_ADDRESS 0x08
 
 typedef enum eColor {
@@ -23,6 +24,7 @@ typedef struct sColorSensor {
 	bool isLight;
 	Color currentColor;
 	int clear;
+	int green;
 } ColorSensor;
 
 typedef struct sLaserSensor {
@@ -52,11 +54,11 @@ ColorSensor rightFrontR;
 ColorSensor rightFrontM;
 SensorPort MSLSA;
 int forward = 30;
-int turnForward = 20;
-int turnBackward = -15;
-const float wheelbase = 19;
-const float width = 17;
-const float diameter = 4.5;
+int turnForward = 50;
+int turnBackward = -10;
+const float wheelbase = 17.5;
+const float width = 16.7;
+const float diameter = 3;
 const float cm = 360.0 / (diameter *  PI);
 const int numOfIterations = 31;
 const float obstacleThreshold = 7;
@@ -119,7 +121,7 @@ void turnRight(float deg, int power = forward)
 	nMotorEncoderTarget[LMotor] = target;
 	motor[LMotor] = power;
 	motor[RMotor] = -power;
-	while(stillRunning(LMotor) || stillRunning(RMotor)){}
+	while(stillRunning(LMotor)){}
 	stopMotors();
 	wait1Msec(100);
 }
@@ -131,7 +133,7 @@ void turnLeft(float deg, int power = forward)
 	nMotorEncoderTarget[RMotor] = target;
 	motor[LMotor] = -power;
 	motor[RMotor] = power;
-	while(stillRunning(RMotor) || stillRunning(LMotor)){}
+	while(stillRunning(RMotor)){}
 	stopMotors();
 	wait1Msec(100);
 }
@@ -160,7 +162,7 @@ void goBack(float dist, int power = forward)
 
 float getDistance(LaserSensor sensor)
 {
-	if (sensor < 0x42 || sensor > 0x46)
+	if (sensor < LEFT_LASER || sensor > RIGHT_LASER)
 		return -1;
 	int ret = 0;
 	tByteArray send;
@@ -169,13 +171,13 @@ float getDistance(LaserSensor sensor)
 	send[1] = ARDUINO_ADDRESS;
 	send[2] = sensor.address;
 	writeI2C(arduino,send);
-	delayMicroseconds(145 + 55);
+	wait1Msec(2);
 	send[2] = 0;
 	writeI2C(arduino,send,receive,2);
 	ret = receive[1] << 8 | receive[0];
 	if (ret == 32767)
 		return -1;
-	return (float)ret/1000;
+	return (float)ret/10;
 }
 
 float getDistance(PingSensor sensor)
@@ -201,31 +203,48 @@ void getColorRGB(ColorSensor sensor, int& r, int& g, int& b)
 	send[1] = ARDUINO_ADDRESS;
 	send[2] = sensor.address;
 	writeI2C(arduino,send);
-	delayMicroseconds(465 + 55);
-	send[2] = 0;
+#ifdef DEBUG
+	writeDebugStreamLine("Time Start: %d", nPgmTime);
+#endif
+	wait1Msec(4);
+#ifdef DEBUG
+	writeDebugStreamLine("Time End: %d", nPgmTime);
+#endif
+	send[2] = 0x00;
+	send[3] = 0x03
 	writeI2C(arduino,send,receive,8);
 	r = receive[7] << 8 | receive[6];
-	g = receive[5] << 8 | receive[4];
-	b = receive[3] << 8 | receive[2];
+	b = receive[5] << 8 | receive[4];
+	g = receive[3] << 8 | receive[2];
+	sensor.green = g;
 	sensor.clear = receive[1] << 8 | receive[0];
+}
+
+void getColorRGB(ColorSensor sensor, int& r, int& g, int& b, int& c)
+{
+	getColorRGB(sensor,r,g,b);
+	c = sensor.clear;
+	//clearI2CError(arduino, ARDUINO_ADDRESS);
 }
 
 Color getColor(ColorSensor sensor)
 {
-	if (sensor.address < 0x48 || sensor.address > 0x55)
+	if (sensor.address < LEFT_FRONT || sensor.address > RIGHT_FRONT)
 		return cInvalid;
 	int red,green,blue;
 	getColorRGB(sensor,red,green,blue);
 	if (sensor.isLight)
-		if (sensor.clear > sensor.silverThreshold)
-			return cSilver;
-		return (Color) (sensor.clear < sensor.bwThreshold);
+		//if (sensor.clear > sensor.silverThreshold)
+		//	return cSilver;
+		//else
+			return (Color) (sensor.clear < sensor.bwThreshold);
 	if (green < sensor.blackThreshold)
 		return cBlack;
 	if (green > sensor.whiteThreshold)
 		return cWhite;
 	if ((float)green/red > sensor.greenRatio)
 		return cGreen;
+	writeDebugStreamLine("GRADIENT %d: %d %d", sensor.address, green, red);
 	return cGradient;
 }
 
@@ -244,7 +263,19 @@ bool seeBlackArray()
 
 bool seeLine()
 {
-	return getColor(leftFrontL) != cWhite && getColor(leftFrontM) != cWhite && getColor(middleFront) != cWhite && getColor(rightFrontM) != cWhite && getColor(rightFrontR) != cWhite;
+	Color leftL = getColor(leftFrontL);
+	Color leftM = getColor(leftFrontM);
+	Color middle = getColor(middleFront);
+	Color rightM = getColor(rightFrontM);
+	Color rightR = getColor(rightFrontR);
+	writeDebugStreamLine("SEELINE: %d %d %d %d %d", leftL, leftM, middle, rightM, rightR);
+	return (leftL != cWhite || leftM != cWhite || middle != cWhite || rightM != cWhite || rightR != cWhite);
+}
+
+void suspend()
+{
+	stopMotors();
+	while(true){}
 }
 
 #endif

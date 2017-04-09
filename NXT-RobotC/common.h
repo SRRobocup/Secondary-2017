@@ -199,6 +199,12 @@ void clearI2CError(tI2CDataPtr data) {
     sleep(10);
   }
 }
+
+void clearI2Cbus(tSensors link) {
+	for (int i = 0; i < 10; i++)
+	{
+	}
+}
 #endif
 
 /**
@@ -236,7 +242,7 @@ bool waitForI2CBus(tSensors link)
   while (true)
   {
     TI2CStatus i2cstatus = nI2CStatus[link];
-#ifdef DEBUG_COMMON_H
+#if defined(DEBUG_COMMON_H) && !defined(SHORT_DEBUG)
     writeDebugStreamLine("nI2CStatus[%d]: %d", link, i2cstatus);
 #endif // DEBUG_COMMON_H
     switch(i2cstatus)
@@ -426,6 +432,10 @@ bool writeI2C(tI2CDataPtr data) {
  */
 bool writeI2C(tSensors link, tByteArray &request) {
 
+#ifdef DEBUG_COMMON_H
+	writeDebugStreamLine("writeI2C(tSensors link, tByteArray &request) called");
+#endif
+
 #if (__COMMON_H_SENSOR_CHECK__ == 1)
   //TSensorTypes type = SensorType[link];
 
@@ -500,7 +510,9 @@ bool writeI2C(tSensors link, tByteArray &request) {
  */
 bool writeI2C(tSensors link, tByteArray &request, tByteArray &reply, short replylen) {
   // clear the input data buffer
-
+#ifdef DEBUG_COMMON_H
+	writeDebugStreamLine("writeI2C(tSensors link, tByteArray &request, tByteArray &reply, short replylen) called");
+#endif
 #if (__COMMON_H_SENSOR_CHECK__ == 1)
   //TSensorTypes type = SensorType[link];
 
