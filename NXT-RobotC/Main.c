@@ -7,8 +7,8 @@ void setup()
 {
 	arduino = S1;
 	MSLSA = S3;
-	LMotor = motorC;
-	RMotor = motorA;
+	LMotor = motorA;
+	RMotor = motorC;
 	bMotorReflected[LMotor] = true;
 	bMotorReflected[RMotor] = true;
 	SensorType[arduino] = sensorI2CCustom9V;
@@ -19,7 +19,7 @@ void setup()
 	frontPing.address = FRONT_PING;
 	MSLSAinit(MSLSA);
 	// 									BW			Sil		Black	White  Rat  BW		 Sil		Black	White  Rat  BW      Sil     Black White  Rat  BW     Sil    Black White  Rat   BW    Sil    Black White  Rat
-	float values[25] = {7331.0,5618.0,716.3,3335.0,1.59,6464.5,5088.0,729.7,2944.0,1.37,5788.0,6389.0,728.7,3011.7,1.49,5032.0,4075.0,724.0,2422.0,1.41,3891.0,3664.0,690.7,1811.3,1.28};
+	float values[25] = {3779.0,3393.0,726.7,1683.0,1.38,3936.0,4734.0,739.3,1566.3,1.31,3252.0,2777.0,741.3,1326.0,1.38,4108.0,3404.0,723.3,1694.0,1.20,3106.0,2623.0,699.3,1320.0,1.42};
 	generateColor(&leftFrontL,LEFT_FRONT,values[0],values[1],values[2],values[3],values[4],true);
 	generateColor(&leftFrontM,LEFT_MIDDLE,values[5],values[6],values[7],values[8],values[9],false);
 	generateColor(&middleFront,MIDDLE_FRONT,values[10],values[11],values[12],values[13],values[14],true);
@@ -33,18 +33,18 @@ task main()
 	setup();
 	while (true)
 	{
-		leftFrontL.currentColor = getColor(leftFrontL);
-		leftFrontM.currentColor = getColor(leftFrontM);
-		middleFront.currentColor = getColor(middleFront);
-		rightFrontM.currentColor = getColor(rightFrontM);
-		rightFrontR.currentColor = getColor(rightFrontR);
+		getColor(leftFrontL);
+		getColor(leftFrontM);
+		getColor(middleFront);
+		getColor(rightFrontM);
+		getColor(rightFrontR);
 		//writeDebugStreamLine("%d %d %d %d %d", leftFrontL.currentColor, leftFrontM.currentColor, middleFront.currentColor, rightFrontM.currentColor, rightFrontR.currentColor);
 		//writeDebugStreamLine("CLEAR: %d %d %d %d %d", leftFrontL.clear, leftFrontM.clear, middleFront.clear, rightFrontM.clear, rightFrontR.clear);
 		writeDebugStreamLine("GREEN: %d %d %d %d %d", leftFrontL.green, leftFrontM.green, middleFront.green, rightFrontM.green, rightFrontR.green);
 
 		//if (getDistance(frontPing) < obstacleThreshold)
 		//{
-		//	obstacle();
+			//obstacle();
 		//}
 		lineTrace();
 	}

@@ -55,5 +55,5 @@ void loop() {
       Serial.print(": "); Serial.println(longRange.readRangeSingleMillimeters());
     }
   }
-  delay(500);
+//  delay(500);
 }

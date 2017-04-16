@@ -33,24 +33,34 @@ task main()
 	clearDebugStream();
 	int r,g,b;
 	while (true) {
-		writeDebugStreamLine("LEFT LASER: %f",getDistance(leftDist));
-		writeDebugStreamLine("MIDDLE: %f",getDistance(frontDist));
-		writeDebugStreamLine("RIGHT LASER: %f",getDistance(rightDist));
+		//writeDebugStreamLine("LEFT LASER: %f",getDistance(leftDist));
+		//displayTextLine(0,"LEFT: %f",getDistance(leftDist));
+		//writeDebugStreamLine("MIDDLE: %f",getDistance(frontDist));
+		//displayTextLine(1,"MIDDLE: %f",getDistance(frontDist));
+		//writeDebugStreamLine("RIGHT LASER: %f",getDistance(rightDist));
+		//displayTextLine(2,"RIGHT: %f",getDistance(rightDist));
 		//delay(5);
 		getColorRGB(leftFrontL,r,g,b);
 		writeDebugStreamLine("LF COLOR %x: %d %d %d %d",LEFT_FRONT,r,g,b,leftFrontL.clear);
+		displayTextLine(3,"LF: %d %d %d %d",r,g,b,leftFrontL.clear);
 		//delay(5);
 		getColorRGB(leftFrontM,r,g,b);
 		writeDebugStreamLine("LM COLOR %x: %d %d %d %d",LEFT_MIDDLE,r,g,b,leftFrontM.clear);
+		displayTextLine(4,"LM: %d %d %d %d",r,g,b,leftFrontM.clear);
 		//delay(5);
 		getColorRGB(middleFront,r,g,b);
 		writeDebugStreamLine("MF COLOR %x: %d %d %d %d",MIDDLE_FRONT,r,g,b,middleFront.clear);
+		displayTextLine(5,"MF: %d %d %d %d",r,g,b,middleFront.clear);
 		//delay(5);
 		getColorRGB(rightFrontM,r,g,b);
 		writeDebugStreamLine("RM COLOR %x: %d %d %d %d",RIGHT_MIDDLE,r,g,b,rightFrontM.clear);
+		displayTextLine(6,"RM: %d %d %d %d",r,g,b,rightFrontM.clear);
 		//delay(5);
 		getColorRGB(rightFrontR,r,g,b);
 		writeDebugStreamLine("RF COLOR %x: %d %d %d %d",RIGHT_FRONT,r,g,b,rightFrontR.clear);
-		delay(750);
+		displayTextLine(7,"RF: %d %d %d %d",r,g,b,rightFrontR.clear);
+
+		writeDebugStreamLine("------------------------------------------------------------------------------");
+		//delay(750);
 	}
 }

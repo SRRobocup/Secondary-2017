@@ -44,8 +44,6 @@ MotorPort RMotor;
 LaserSensor leftDist;
 LaserSensor frontDist;
 LaserSensor rightDist;
-LaserSensor downLeftDist;
-LaserSensor downRightDist;
 PingSensor frontPing;
 ColorSensor leftFrontL;
 ColorSensor leftFrontM;
@@ -54,10 +52,10 @@ ColorSensor rightFrontR;
 ColorSensor rightFrontM;
 SensorPort MSLSA;
 int forward = 30;
-int turnForward = 50;
+int turnForward = 55;
 int turnBackward = -10;
-const float wheelbase = 17.5;
-const float width = 16.7;
+const float wheelbase = 15.7;
+const float width = 13.5;
 const float diameter = 3;
 const float cm = 360.0 / (diameter *  PI);
 const int numOfIterations = 31;
@@ -190,6 +188,11 @@ float getDistance(PingSensor sensor)
 	send[0] = 2;
 	send[1] = ARDUINO_ADDRESS;
 	send[2] = sensor.address;
+	writeI2C(arduino,send);
+	send[2] = 0x00;
+	send[3] = 0x03;
+	delay(2);
+	delayMicroseconds(-1,1);
 	writeI2C(arduino,send,receive,2);
 	ret = receive[1] << 8 | receive[0];
 	return (float)ret / 29 / 2;
@@ -206,12 +209,12 @@ void getColorRGB(ColorSensor sensor, int& r, int& g, int& b)
 #ifdef DEBUG
 	writeDebugStreamLine("Time Start: %d", nPgmTime);
 #endif
-	wait1Msec(4);
+	wait1Msec(2);
 #ifdef DEBUG
 	writeDebugStreamLine("Time End: %d", nPgmTime);
 #endif
 	send[2] = 0x00;
-	send[3] = 0x03
+	send[3] = 0x03;
 	writeI2C(arduino,send,receive,8);
 	r = receive[7] << 8 | receive[6];
 	b = receive[5] << 8 | receive[4];
@@ -229,35 +232,56 @@ void getColorRGB(ColorSensor sensor, int& r, int& g, int& b, int& c)
 
 Color getColor(ColorSensor sensor)
 {
-	if (sensor.address < LEFT_FRONT || sensor.address > RIGHT_FRONT)
-		return cInvalid;
-	int red,green,blue;
-	getColorRGB(sensor,red,green,blue);
-	if (sensor.isLight)
-		//if (sensor.clear > sensor.silverThreshold)
-		//	return cSilver;
-		//else
-			return (Color) (sensor.clear < sensor.bwThreshold);
-	if (green < sensor.blackThreshold)
-		return cBlack;
-	if (green > sensor.whiteThreshold)
-		return cWhite;
-	if ((float)green/red > sensor.greenRatio)
-		return cGreen;
-	writeDebugStreamLine("GRADIENT %d: %d %d", sensor.address, green, red);
-	return cGradient;
+	do {
+		if (sensor.address < LEFT_FRONT || sensor.address > RIGHT_FRONT)
+		{
+			sensor.currentColor = cInvalid;
+			break;
+		}
+		int red,green,blue;
+		getColorRGB(sensor,red,green,blue);
+		if (sensor.isLight)
+		{
+			//if (sensor.clear > sensor.silverThreshold)
+			//	return cSilver;
+			//else
+				sensor.currentColor = (Color) (sensor.clear < sensor.bwThreshold);
+				break;
+		}
+		if (green < sensor.blackThreshold)
+		{
+			sensor.currentColor = cBlack;
+			break;
+		}
+		if (green > sensor.whiteThreshold)
+		{
+			sensor.currentColor = cWhite;
+			break;
+		}
+		if ((float)green/red > sensor.greenRatio)
+		{
+			sensor.currentColor = cGreen;
+			break;
+		}
+		writeDebugStreamLine("GRADIENT %d: %d %d", sensor.address, green, red);
+		sensor.currentColor = cGradient;
+	} while (false);
+	return sensor.currentColor;
 }
 
 bool seeBlackArray()
 {
 	bool ret = false;
-	int threshold = 40;
+	ubyte threshold = 40;
 	ubyte values[8];
 	MSLSAreadSensors(MSLSA,values);
 	for (int i = 0; i < 8; i++)
 	{
 		ret = values[i] < threshold || ret;
 	}
+	//for (int i = 0; i < 8; i++)
+	//		writeDebugStream("%d ", values[i]);
+	//	writeDebugStreamLine("");
 	return ret;
 }
 
@@ -268,7 +292,7 @@ bool seeLine()
 	Color middle = getColor(middleFront);
 	Color rightM = getColor(rightFrontM);
 	Color rightR = getColor(rightFrontR);
-	writeDebugStreamLine("SEELINE: %d %d %d %d %d", leftL, leftM, middle, rightM, rightR);
+	//writeDebugStreamLine("SEELINE: %d %d %d %d %d", leftL, leftM, middle, rightM, rightR);
 	return (leftL != cWhite || leftM != cWhite || middle != cWhite || rightM != cWhite || rightR != cWhite);
 }
 

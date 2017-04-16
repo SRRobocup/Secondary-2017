@@ -171,9 +171,9 @@ task main()
 	}
 	playSound(soundBlip);
 	writeDebugStreamLine("{%.1f,%.1f,%.1f,%.1f,%.2f,%.1f,%.1f,%.1f,%.1f,%.2f,%.1f,%.1f,%.1f,%.1f,%.2f,%.1f,%.1f,%.1f,%.1f,%.2f,%.1f,%.1f,%.1f,%.1f,%.2f};",
-	(float)(black[0][1] + white[0][1])/2,silver[0]-5,determineThresh(black[0][0],green[0][0]), determineThresh(white[0][0],green[0][1]),min[0],
-	(float)(black[1][1] + white[1][1])/2,silver[1]-5,determineThresh(black[1][0],green[1][0]), determineThresh(white[1][0],green[1][1]),min[1],
-	(float)(black[2][1] + white[2][1])/2,silver[2]-5,determineThresh(black[2][0],green[2][0]), determineThresh(white[2][0],green[2][1]),min[2],
-	(float)(black[3][1] + white[3][1])/2,silver[3]-5,determineThresh(black[3][0],green[3][0]), determineThresh(white[3][0],green[3][1]),min[3],
-	(float)(black[4][1] + white[4][1])/2,silver[4]-5,determineThresh(black[4][0],green[4][0]), determineThresh(white[4][0],green[4][1]),min[4]);
+	(float)(black[0][1] + white[0][1])/2,silver[0]-40,determineThresh(black[0][0],green[0][0]), determineThresh(white[0][0],green[0][1]),min[0]-0.05,
+	(float)(black[1][1] + white[1][1])/2,silver[1]-40,determineThresh(black[1][0],green[1][0]), determineThresh(white[1][0],green[1][1]),min[1]-0.05,
+	(float)(black[2][1] + white[2][1])/2,silver[2]-40,determineThresh(black[2][0],green[2][0]), determineThresh(white[2][0],green[2][1]),min[2]-0.05,
+	(float)(black[3][1] + white[3][1])/2,silver[3]-40,determineThresh(black[3][0],green[3][0]), determineThresh(white[3][0],green[3][1]),min[3]-0.05,
+	(float)(black[4][1] + white[4][1])/2,silver[4]-40,determineThresh(black[4][0],green[4][0]), determineThresh(white[4][0],green[4][1]),min[4]-0.05);
 }

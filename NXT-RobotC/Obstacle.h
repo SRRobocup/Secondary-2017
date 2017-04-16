@@ -2,11 +2,11 @@
 
 void obstacle()
 {
-	const float kP = 1.5;
-	const float kI = 1.5;
-	const float kD = 1.5;
+	const float kP = 8;
+	const float kI = 0;
+	const float kD = 0;
 	float P, I, D, lastP;
-	float threshold = 0;
+	float threshold = 4.5;
 	float dir; //1 is left, -1 is right
 	float lFirst = getDistance(leftDist);
 	float rFirst = getDistance(rightDist);
@@ -15,10 +15,11 @@ void obstacle()
 	float adjust;
 	float tp = 20;
 	dir = lDist > rDist ? 1 : -1; //bias is set here
+	bool lastStateSensor = middleFront.isLight;
+	middleFront.isLight = true;
 	if (dir == 1)
 	{
 		turnLeft(90);
-		middleFront.isLight = true;
 		while (getColor(middleFront) != cBlack)
 		{
 			P = getDistance(rightDist) - threshold;
@@ -29,6 +30,7 @@ void obstacle()
 			adjust = P*kP + I*kI + D*kD;
 			motor[LMotor] = tp + adjust;
 			motor[RMotor] = tp - adjust;
+			delay(8);
 		}
 		goStraight(5);
 		motor[LMotor] = -tp;
@@ -39,7 +41,6 @@ void obstacle()
 	else
 	{
 		turnRight(90);
-		middleFront.isLight = true;
 		while (getColor(middleFront) != cBlack)
 		{
 			P = getDistance(leftDist) - threshold;
@@ -50,6 +51,7 @@ void obstacle()
 			adjust = P*kP + I*kI + D*kD;
 			motor[LMotor] = tp + adjust;
 			motor[RMotor] = tp - adjust;
+			delay(8);
 		}
 		goStraight(5);
 		motor[LMotor] = tp;
@@ -57,4 +59,5 @@ void obstacle()
 		while (getColor(middleFront) == cBlack){}
 		while (getColor(middleFront) != cBlack){}
 	}
+	middleFront.isLight = lastStateSensor;
 }

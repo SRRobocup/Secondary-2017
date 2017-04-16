@@ -33,18 +33,31 @@ void arrayPID()
 	(upperLimit - clamp(values[5],lowerLimit,upperLimit)) * -20 +
 	(upperLimit - clamp(values[6],lowerLimit,upperLimit)) * -100 +
 	(upperLimit - clamp(values[7],lowerLimit,upperLimit)) * -500;
-	motor[motorA] = tp + curr*kp;
-	motor[motorC] = tp - curr*kp;
+	motor[LMotor] = tp - curr*kp;
+	motor[RMotor] = tp + curr*kp;
 }
 
 void lineTrace()
 {
-	const float kP = 0.002, kI = 0, kD = 0;
+	const float kP = 0.002, kI = 0.001, kD = 0.0015;
 	float P,I = 0,D, lastP;
 	float adjust;
 	unsigned int state = getState();
-	state = leftFrontM.currentColor == cGreen ? LEFTGREEN : state;
-	state = rightFrontM.currentColor == cGreen ? RIGHTGREEN : state;
+	if (!(leftFrontM.currentColor == cGreen && rightFrontM.currentColor == cGreen))
+	{
+		state = leftFrontM.currentColor == cGreen ? LEFTGREEN : state;
+		state = rightFrontM.currentColor == cGreen ? RIGHTGREEN : state;
+	}
+	else
+		state = 02020;
+	if (state == NONE && lastState == (LEFTLBLACK + LEFTMBLACK) && lastState == (RIGHTRBLACK + RIGHTMBLACK))
+ 	{
+ 		int dir = lastState == (LEFTLBLACK + LEFTMBLACK) ? 1 : -1;
+ 		motor[LMotor] = forward*dir;
+ 		motor[RMotor] = forward*-dir;
+ 		while (getColor(middleFront) == cWhite){}
+ 		stopMotors();
+ 	}
 	if (state == NONE && seeBlackArray())
 	{
 		state = 00100;
@@ -59,25 +72,34 @@ void lineTrace()
 			motor[RMotor] = forward;
 			while (nMotorEncoder[LMotor] < 5*cm)
 			{
-				if (seeLine() || seeBlackArray())
+				if (seeLine())
+				{
+					writeDebugStreamLine("FOUND LINE");
 					return;
+				}
 			}
 			while (!seeBlackArray())
 			{
 				motor[LMotor] = -30;
 				motor[RMotor] = -30;
 			}
+			stopMotors();
+			//goBack(5);
 			goBack(5);
-			int startTime = 0, timeLimit = 1500;
+			int startTime = 0, timeLimit = 2000;
 			for(int i = 0; i < 4; i++)
 			{
 				startTime = nPgmTime;
 				while(seeBlackArray())
 				{
 					if (nPgmTime - startTime > timeLimit)
+					{
+						writeDebugStreamLine("FOUND LINE");
 						return;
+					}
 					arrayPID();
 				}
+				writeDebugStreamLine("ITERATION %d DONE",i);
 				goBack(5);
 			}
 			motor[LMotor] = forward;
@@ -94,7 +116,9 @@ void lineTrace()
 		case LEFTGREEN:
 			displayTextLine(0,"State: LEFTGREEN");
 			writeDebugStreamLine("LEFTGREEN");
-			while (getColor(leftFrontM) == cGradient || leftFrontM.currentColor == cGradient){}
+			motor[LMotor] = forward;
+			motor[RMotor] = forward;
+			while (getColor(leftFrontM) == cGreen || leftFrontM.currentColor == cGradient){}
 			if (leftFrontM.currentColor == cWhite)
 				return;
 			goStraight(7);
@@ -114,8 +138,10 @@ void lineTrace()
 			break;
 		case RIGHTGREEN:
 			displayTextLine(0,"State: RIGHTGREEN");
-			writeDebugStreamLine("RIGHTGREEN")
-			while (getColor(rightFrontM) == cGradient || rightFrontM.currentColor == cGradient){}
+			writeDebugStreamLine("RIGHTGREEN");
+			motor[LMotor] = forward;
+			motor[RMotor] = forward;
+			while (getColor(rightFrontM) == cGreen || rightFrontM.currentColor == cGradient){}
 			if (rightFrontM.currentColor == cWhite)
 				return;
 			goStraight(7);
@@ -153,34 +179,61 @@ void lineTrace()
 			displayTextLine(0,"State: LEFT 90 TURN");
 			writeDebugStreamLine("LEFT 90");
 			goStraight(7);
-			motor[LMotor] = -forward;
-			motor[RMotor] = forward;
-			nMotorEncoder[RMotor] = 0;
-			while (getColor(middleFront) != cWhite){}
-			while (getColor(middleFront) == cWhite && nMotorEncoder[RMotor] < wheelbase*PI/4*cm){}
-			if (nMotorEncoder[RMotor] >= wheelbase*PI/4*cm)
-				return;
-			while (getColor(middleFront) != cWhite){}
-			motor[LMotor] = forward;
-			motor[RMotor] = -forward;
-			while (getColor(middleFront) == cWhite){}
-			stopMotors();
-			break;
-		case RIGHTMBLACK + RIGHTRBLACK:
-			displayTextLine(0,"State: RIGHT 90 TURN")
-			writeDebugStreamLine("RIGHT 90");
-			goStraight(7);
+			turnLeft(90);
 			motor[LMotor] = forward;
 			motor[RMotor] = -forward;
 			nMotorEncoder[LMotor] = 0;
-			while (getColor(middleFront) != cWhite){}
+			//while (getColor(middleFront) != cWhite){}
 			while (getColor(middleFront) == cWhite && nMotorEncoder[LMotor] < wheelbase*PI/4*cm){}
-			if (nMotorEncoder[LMotor] >= wheelbase*PI/4*cm)
-				return;
-			while (getColor(middleFront) != cWhite){}
+			if (nMotorEncoder[LMotor] < wheelbase*PI/4*cm)
+			{
+				//while (getColor(middleFront) != cWhite){}
+				//motor[LMotor] = forward;
+				//motor[RMotor] = -forward;
+				//while (getColor(middleFront) == cWhite){}
+				//motor[LMotor] = -forward;
+				//motor[RMotor] = forward;
+				while (getColor(leftFrontM) == cBlack || getColor(rightFrontM) == cBlack){}
+			}
+			else if (!seeLine())
+			{
+				motor[LMotor] = forward;
+				motor[RMotor] = -forward;
+				nMotorEncoder[LMotor] = 0;
+				while (getColor(middleFront) == cWhite){}
+				while (getColor(leftFrontM) == cBlack || getColor(rightFrontM) == cBlack){}
+			}
+			stopMotors();
+			//goBack(1);
+			break;
+		case RIGHTMBLACK + RIGHTRBLACK:
+			displayTextLine(0,"State: RIGHT 90 TURN");
+			writeDebugStreamLine("RIGHT 90");
+			goStraight(7);
+			turnRight(90);
 			motor[LMotor] = -forward;
 			motor[RMotor] = forward;
-			while (getColor(middleFront) == cWhite){}
+			nMotorEncoder[RMotor] = 0;
+			//while (getColor(middleFront) != cWhite){}
+			while (getColor(middleFront) == cWhite && nMotorEncoder[RMotor] < wheelbase*PI/4*cm){}
+			if (nMotorEncoder[RMotor] < wheelbase*PI/4*cm)
+			{
+				//while (getColor(middleFront) != cWhite){}
+				//motor[LMotor] = -forward;
+				//motor[RMotor] = forward;
+				//while (getColor(middleFront) == cWhite){}
+				//motor[LMotor] = forward;
+				//motor[RMotor] = -forward;
+				while (getColor(leftFrontM) == cBlack || getColor(rightFrontM) == cBlack){}
+			}
+			else if (!seeLine())
+			{
+				motor[LMotor] = -forward;
+				motor[RMotor] = forward;
+				nMotorEncoder[LMotor] = 0;
+				while (getColor(middleFront) == cWhite){}
+				while (getColor(leftFrontM) == cBlack || getColor(rightFrontM) == cBlack){}
+			}
 			stopMotors();
 			break;
 		case MIDDLEBLACK + LEFTMBLACK + LEFTMBLACK:
@@ -191,16 +244,16 @@ void lineTrace()
 			break;
 		default:
 			displayTextLine(0,"State: STRAIGHT");
-			writeDebugStreamLine("STRAIGHT"):
+			writeDebugStreamLine("STRAIGHT");
 			//twoEye PID??
 			//motor[LMotor] = forward;
 			//motor[RMotor] = forward;
 			P = leftFrontM.clear - rightFrontM.clear;
-			writeDebugStreamLine("%d", P);
-			if (abs(P) < 800)
+			writeDebugStreamLine("P: %d", P);
+			if (abs(P) < 1400)
 				I = 0;
 			else
-				I -= P;
+				I += P;
 			D = P - lastP;
 			adjust = P*kP + I*kI + D*kD;
 			//adjust = 0;

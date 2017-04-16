@@ -13,15 +13,16 @@ TCA9548A mux = TCA9548A();
 
 Adafruit_TCS34725 colorSensor = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
-const int pingPins[] = {7,8,9};
+const int pingPins[] = {7,11,9};
 volatile uint16_t currentTag = 0;
 volatile uint8_t currentCommand = 0;
 volatile uint8_t bytesToSend = 0;
 volatile byte buff[8] = {0,0,0,0,0,0,0,0};
 volatile byte lastSent[8] = {0,0,0,0,0,0,0,0};
-int pingBuffer[] = {1,2,3};
+int pingBuffer = 0;
 uint16_t red, blue, green, clear;
 bool set = false;
+const int frontPingPin = 11;
 
 void setup() {
   Serial.begin(115200);
@@ -42,18 +43,9 @@ void setup() {
     longRange.setMeasurementTimingBudget(20000);
     longRange.startContinuous();
   }
-  
-//#if defined HIGH_SPEED
-//  // reduce timing budget to 20 ms (default is about 33 ms)
-//  
-//#elif defined HIGH_ACCURACY
-//  // increase timing budget to 200 ms
-//  longRange.setMeasurementTimingBudget(200000);
-//#endif
-//  longRange.startContinuous();
+
   Serial.print("START CODE: ");
   Serial.println(mux.disable());
-  //mux.select(7);
 }
 
 //get first byte and set to data and discard all other bytes
@@ -66,13 +58,9 @@ void receiveEvent(int bytesReceived) {
 
 //send data buffer
 void requestEvent() {
-//  byte buf[] = {0x42};
-//  Wire.write(buf,1);
-//return;
   byte realBuff[8];
   for (int i = 0; i < 8; i++) {
     realBuff[i] = buff[i];
-//    lastSent[i] = buff[i];
   }
   Wire.write(realBuff,bytesToSend);
 }
@@ -132,9 +120,18 @@ void loop() {
     case LEFT_PING:
     case FRONT_PING:
     case RIGHT_PING:
-      split(&buff[0], pingBuffer[currentTag - LEFT_PING]);
+      pinMode(pingPins[currentTag - LEFT_PING], OUTPUT);
+      digitalWrite(pingPins[currentTag - LEFT_PING], LOW);
+      delayMicroseconds(2);
+      digitalWrite(pingPins[currentTag - LEFT_PING], HIGH);
+      delayMicroseconds(5);
+      digitalWrite(pingPins[currentTag - LEFT_PING], LOW);
+    
+      pinMode(pingPins[currentTag - LEFT_PING], INPUT);
+      pingBuffer = pulseIn(pingPins[currentTag - LEFT_PING], HIGH);
+      delayMicroseconds(1000);
+      split(&buff[0], pingBuffer);
       bytesToSend = 2;
-      mux.disable();
       currentTag = -1;
       set = true;
       break;
@@ -162,13 +159,6 @@ void loop() {
       set = true;
       break;
   }
-  //if no convergence, set to ridiculous number
-//  Serial.print("SENT: ");
-//  printLL(sent);
-//  if (status) {
-//    byte
-//    status = false;
-//  }
   if (set) {
     Serial.print("SENT TAG: ");
     Serial.print(currentTag, HEX);
@@ -176,10 +166,10 @@ void loop() {
     printArr(buff,bytesToSend);
     set = false;
   }
-//  if (lastSent[0] != 0)
-//    printArr(lastSent,8);
+  if (lastSent[0] != 0)
+    printArr(lastSent,8);
   //reset tag
-//  Serial.println(bytesToSend);
+  //Serial.println(bytesToSend);
   if (Serial.available() > 1)
   {
     Serial.print("Recieved "); Serial.print(Serial.available()); Serial.println(" bytes");
@@ -200,15 +190,4 @@ void loop() {
     Serial.println();
     flushBuffer();
   }
-//  for (int i = 0; i < 3; i++) {
-//    pinMode(pingPin[i], OUTPUT);
-//    digitalWrite(pingPin[i], LOW);
-//    delayMicroseconds(2);
-//    digitalWrite(pingPin[i], HIGH);
-//    delayMicroseconds(5);
-//    digitalWrite(pingPin[i], LOW);
-//
-//    pinMode(pingPin[i], INPUT);
-//    pingBuffer[i] = pulseIn(pingPin[i], HIGH);
-//  }
 }
