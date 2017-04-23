@@ -39,6 +39,8 @@ typedef tSensors SensorPort;
 typedef tMotor MotorPort;
 
 SensorPort arduino;
+SensorPort MSLSA;
+SensorPort touch;
 MotorPort LMotor;
 MotorPort RMotor;
 LaserSensor leftDist;
@@ -50,12 +52,12 @@ ColorSensor leftFrontM;
 ColorSensor middleFront;
 ColorSensor rightFrontR;
 ColorSensor rightFrontM;
-SensorPort MSLSA;
 int forward = 30;
-int turnForward = 55;
-int turnBackward = -10;
+int turnForward = 65;
+int turnBackward = -15;
 const float wheelbase = 15.7;
 const float width = 13.5;
+const float length = 15;
 const float diameter = 3;
 const float cm = 360.0 / (diameter *  PI);
 const int numOfIterations = 31;
@@ -121,7 +123,7 @@ void turnRight(float deg, int power = forward)
 	motor[RMotor] = -power;
 	while(stillRunning(LMotor)){}
 	stopMotors();
-	wait1Msec(100);
+	//wait1Msec(100);
 }
 
 void turnLeft(float deg, int power = forward)
@@ -133,7 +135,15 @@ void turnLeft(float deg, int power = forward)
 	motor[RMotor] = power;
 	while(stillRunning(RMotor)){}
 	stopMotors();
-	wait1Msec(100);
+	//wait1Msec(100);
+}
+
+void turnAbs(float deg, int power = forward)
+{
+	if(deg > 0)
+		turnRight(abs(deg), power);
+	else if (deg < 0)
+		turnLeft(abs(deg), power);
 }
 
 void goStraight(float dist, int power = forward)
@@ -232,41 +242,23 @@ void getColorRGB(ColorSensor sensor, int& r, int& g, int& b, int& c)
 
 Color getColor(ColorSensor sensor)
 {
-	do {
-		if (sensor.address < LEFT_FRONT || sensor.address > RIGHT_FRONT)
-		{
-			sensor.currentColor = cInvalid;
-			break;
-		}
-		int red,green,blue;
-		getColorRGB(sensor,red,green,blue);
-		if (sensor.isLight)
-		{
-			//if (sensor.clear > sensor.silverThreshold)
-			//	return cSilver;
-			//else
-				sensor.currentColor = (Color) (sensor.clear < sensor.bwThreshold);
-				break;
-		}
-		if (green < sensor.blackThreshold)
-		{
-			sensor.currentColor = cBlack;
-			break;
-		}
-		if (green > sensor.whiteThreshold)
-		{
-			sensor.currentColor = cWhite;
-			break;
-		}
-		if ((float)green/red > sensor.greenRatio)
-		{
-			sensor.currentColor = cGreen;
-			break;
-		}
-		writeDebugStreamLine("GRADIENT %d: %d %d", sensor.address, green, red);
-		sensor.currentColor = cGradient;
-	} while (false);
-	return sensor.currentColor;
+	if (sensor.address < LEFT_FRONT || sensor.address > RIGHT_FRONT)
+		return cInvalid;
+	int red,green,blue;
+	getColorRGB(sensor,red,green,blue);
+	if (sensor.isLight)
+		//if (sensor.clear > sensor.silverThreshold)
+		//	return cSilver;
+		//else
+			return (Color) (sensor.clear < sensor.bwThreshold);
+	if (green < sensor.blackThreshold)
+		return cBlack;
+	if (green > sensor.whiteThreshold)
+		return cWhite;
+	if ((float)green/red > sensor.greenRatio)
+		return cGreen;
+	//writeDebugStreamLine("GRADIENT %d: %d %d", sensor.address, green, red);
+	return cGradient;
 }
 
 bool seeBlackArray()
@@ -296,10 +288,23 @@ bool seeLine()
 	return (leftL != cWhite || leftM != cWhite || middle != cWhite || rightM != cWhite || rightR != cWhite);
 }
 
+void lowerClaw()
+{
+}
+
+void raiseClaw()
+{
+}
+
 void suspend()
 {
 	stopMotors();
 	while(true){}
+}
+
+bool equals(float val1, float val2, float tolerance)
+{
+	return abs(val1 - val2) < tolerance;
 }
 
 #endif

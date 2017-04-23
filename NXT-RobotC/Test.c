@@ -34,6 +34,7 @@ float tp = 20;
 task main()
 {
 	setup();
+	int r,g,b,c;
 	while (true)
 	{
 		P = getDistance(rightDist) - threshold;
@@ -43,10 +44,13 @@ task main()
 			I = 0;
 		D = P - lastP;
 		adjust = P*kP + I*kI + D*kD;
+		adjust = 0;
 		motor[LMotor] = tp + adjust;
 		motor[RMotor] = tp - adjust;
-		delay(1);
+		//delay(1);
 	//writeDebugStreamLine("DIST: %f", getDistance(rightDist));
-	delay(8);
+		//getColorRGB(middleFront,r,g,b,c);
+		//writeDebugStreamLine("COLOR: %d",c);
+		//delay(500);
 	}
 }

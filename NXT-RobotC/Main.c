@@ -6,6 +6,7 @@
 void setup()
 {
 	arduino = S1;
+	touch = S2;
 	MSLSA = S3;
 	LMotor = motorA;
 	RMotor = motorC;
@@ -33,18 +34,18 @@ task main()
 	setup();
 	while (true)
 	{
-		getColor(leftFrontL);
-		getColor(leftFrontM);
-		getColor(middleFront);
-		getColor(rightFrontM);
-		getColor(rightFrontR);
+		leftFrontL.currentColor = getColor(leftFrontL);
+		leftFrontM.currentColor = getColor(leftFrontM);
+		middleFront.currentColor = getColor(middleFront);
+		rightFrontM.currentColor = getColor(rightFrontM);
+		rightFrontR.currentColor = getColor(rightFrontR);
 		//writeDebugStreamLine("%d %d %d %d %d", leftFrontL.currentColor, leftFrontM.currentColor, middleFront.currentColor, rightFrontM.currentColor, rightFrontR.currentColor);
 		//writeDebugStreamLine("CLEAR: %d %d %d %d %d", leftFrontL.clear, leftFrontM.clear, middleFront.clear, rightFrontM.clear, rightFrontR.clear);
 		writeDebugStreamLine("GREEN: %d %d %d %d %d", leftFrontL.green, leftFrontM.green, middleFront.green, rightFrontM.green, rightFrontR.green);
 
 		//if (getDistance(frontPing) < obstacleThreshold)
 		//{
-			//obstacle();
+		//	obstacle();
 		//}
 		lineTrace();
 	}
