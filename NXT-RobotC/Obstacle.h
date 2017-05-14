@@ -19,19 +19,22 @@ void obstacle()
 	middleFront.isLight = true;
 	if (dir == 1)
 	{
-		turnLeft(90);
+		turnLeft(70);
 		while (getColor(middleFront) != cBlack)
 		{
 			P = getDistance(rightDist) - threshold;
+			writeDebugStreamLine("P: %f", P);
 			I += P;
 			if (abs(P) < 1.5)
 				I = 0;
 			D = P - lastP;
 			adjust = P*kP + I*kI + D*kD;
-			motor[LMotor] = tp + adjust;
-			motor[RMotor] = tp - adjust;
+			motor[LMotor] = tp - adjust;
+			motor[RMotor] = tp + adjust;
 			delay(8);
 		}
+		stopMotors();
+		writeDebugStreamLine("MIDDLE FRONT: %d", getColor(middleFront));
 		goStraight(5);
 		motor[LMotor] = -tp;
 		motor[RMotor] = tp;
@@ -40,17 +43,18 @@ void obstacle()
 	}
 	else
 	{
-		turnRight(90);
+		turnRight(70);
 		while (getColor(middleFront) != cBlack)
 		{
 			P = getDistance(leftDist) - threshold;
+			writeDebugStreamLine("P: %f", P);
 			I += P;
 			if (abs(P) < 1.5)
 				I = 0;
 			D = P - lastP;
 			adjust = P*kP + I*kI + D*kD;
-			motor[LMotor] = tp + adjust;
-			motor[RMotor] = tp - adjust;
+			motor[LMotor] = tp - adjust;
+			motor[RMotor] = tp + adjust;
 			delay(8);
 		}
 		goStraight(5);

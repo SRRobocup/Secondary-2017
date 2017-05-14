@@ -2,25 +2,20 @@
 
 int numberOfBalls = 0;
 
-void openClaw()
-{
-}
-
-void closeClaw()
-{
-}
-
 void grabBall()
 {
-	openClaw();
+	openServo(clawServo);
 	lowerClaw();
-	closeClaw();
+	closeServo(clawServo);
 	raiseClaw();
 	numberOfBalls++;
 }
 
 void dumpBalls()
 {
+	openServo(dumperServo);
+	wait1Msec(2000);
+	closeServo(dumperServo);
 	numberOfBalls = 0;
 }
 

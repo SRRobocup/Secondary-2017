@@ -3,7 +3,13 @@
 #include "common.h"
 #include "mindsensors-lightsensorarray.h"
 #include "C:\Users\ethan_000\Documents\Git Repos\RCJ Secondary 2017\Register.h"
+#include "NXTServo-lib.c"
 #define ARDUINO_ADDRESS 0x08
+#define SERVO_CONTROLLER_ADDRESS 0xb0
+
+typedef tSensors SensorPort;
+typedef tMotor MotorPort;
+typedef int ServoPort;
 
 typedef enum eColor {
 	cInvalid = 255,
@@ -35,14 +41,27 @@ typedef struct sPingSensor {
 	ubyte address;
 } PingSensor;
 
-typedef tSensors SensorPort;
-typedef tMotor MotorPort;
+typedef struct sMindServo {
+	ServoPort port;
+	int close;
+	int open;
+} MindServo;
+
+typedef struct sSpeedServo {
+	ServoPort port;
+} SpeedServo;
+
+typedef struct sArduinoServo {
+	ubyte address;
+} ArduinoServo;
 
 SensorPort arduino;
 SensorPort MSLSA;
 SensorPort touch;
+SensorPort servoController;
 MotorPort LMotor;
 MotorPort RMotor;
+MotorPort liftMotor;
 LaserSensor leftDist;
 LaserSensor frontDist;
 LaserSensor rightDist;
@@ -52,6 +71,9 @@ ColorSensor leftFrontM;
 ColorSensor middleFront;
 ColorSensor rightFrontR;
 ColorSensor rightFrontM;
+MindServo dumperServo;
+MindServo clawServo;
+ArduinoServo frontColorServo;
 int forward = 30;
 int turnForward = 65;
 int turnBackward = -15;
@@ -61,7 +83,7 @@ const float length = 15;
 const float diameter = 3;
 const float cm = 360.0 / (diameter *  PI);
 const int numOfIterations = 31;
-const float obstacleThreshold = 7;
+const float obstacleThreshold = 8;
 const float microsecondsPerIteration = (float) 1000 / numOfIterations;
 
 void generateColor(ColorSensor* sensor, ubyte address,float bwThreshold,float silverThreshold,float blackThreshold, float whiteThreshold, float greenRatio, bool isLight)
@@ -73,6 +95,13 @@ void generateColor(ColorSensor* sensor, ubyte address,float bwThreshold,float si
 	sensor->greenRatio = greenRatio;
 	sensor->isLight = isLight;
 	sensor->currentColor = cInvalid;
+}
+
+void generateServo(MindServo* serv, ServoPort port, int open, int close)
+{
+	serv->port = port;
+	serv->open = open;
+	serv->close = close;
 }
 
 float clamp(float val,float up,float low)
@@ -175,37 +204,37 @@ float getDistance(LaserSensor sensor)
 	int ret = 0;
 	tByteArray send;
 	tByteArray receive;
-	send[0] = 2;
-	send[1] = ARDUINO_ADDRESS;
-	send[2] = sensor.address;
-	writeI2C(arduino,send);
-	wait1Msec(2);
-	send[2] = 0;
-	writeI2C(arduino,send,receive,2);
-	ret = receive[1] << 8 | receive[0];
-	if (ret == 32767)
-		return -1;
+	do {
+		send[0] = 2;
+		send[1] = ARDUINO_ADDRESS;
+		send[2] = sensor.address;
+		writeI2C(arduino,send);
+		wait1Msec(8);
+		send[2] = 0x01;
+		writeI2C(arduino,send,receive,2);
+		ret = receive[1] << 8 | receive[0];
+	} while (ret == 0);
 	return (float)ret/10;
 }
 
 float getDistance(PingSensor sensor)
 {
-	if (sensor != 0x47)
+	if (sensor != FRONT_PING)
 		return -1;
 	int ret = 0;
+	float cm;
 	tByteArray send;
 	tByteArray receive;
-	send[0] = 2;
-	send[1] = ARDUINO_ADDRESS;
-	send[2] = sensor.address;
-	writeI2C(arduino,send);
-	send[2] = 0x00;
-	send[3] = 0x03;
-	delay(2);
-	delayMicroseconds(-1,1);
-	writeI2C(arduino,send,receive,2);
-	ret = receive[1] << 8 | receive[0];
-	return (float)ret / 29 / 2;
+	do {
+		send[0] = 2;
+		send[1] = ARDUINO_ADDRESS;
+		send[2] = sensor.address;
+		writeI2C(arduino,send,receive,2);
+		ret = receive[1] << 8 | receive[0];
+		cm = (float)ret / 29 / 2;
+		delay(10);
+	} while (cm > 400 || cm == 0);
+	return cm;
 }
 
 void getColorRGB(ColorSensor sensor, int& r, int& g, int& b)
@@ -219,12 +248,11 @@ void getColorRGB(ColorSensor sensor, int& r, int& g, int& b)
 #ifdef DEBUG
 	writeDebugStreamLine("Time Start: %d", nPgmTime);
 #endif
-	wait1Msec(2);
+	wait1Msec(3);
 #ifdef DEBUG
 	writeDebugStreamLine("Time End: %d", nPgmTime);
 #endif
-	send[2] = 0x00;
-	send[3] = 0x03;
+	send[2] = 0x01;
 	writeI2C(arduino,send,receive,8);
 	r = receive[7] << 8 | receive[6];
 	b = receive[5] << 8 | receive[4];
@@ -243,22 +271,35 @@ void getColorRGB(ColorSensor sensor, int& r, int& g, int& b, int& c)
 Color getColor(ColorSensor sensor)
 {
 	if (sensor.address < LEFT_FRONT || sensor.address > RIGHT_FRONT)
-		return cInvalid;
+			return cInvalid;
+	Color curr;
 	int red,green,blue;
-	getColorRGB(sensor,red,green,blue);
-	if (sensor.isLight)
+	do {
+		getColorRGB(sensor,red,green,blue);
+		if (sensor.isLight) {
 		//if (sensor.clear > sensor.silverThreshold)
 		//	return cSilver;
 		//else
-			return (Color) (sensor.clear < sensor.bwThreshold);
-	if (green < sensor.blackThreshold)
-		return cBlack;
-	if (green > sensor.whiteThreshold)
-		return cWhite;
-	if ((float)green/red > sensor.greenRatio)
-		return cGreen;
-	//writeDebugStreamLine("GRADIENT %d: %d %d", sensor.address, green, red);
-	return cGradient;
+			curr = (Color) (sensor.clear < sensor.bwThreshold);
+			break;
+		}
+		if (green < sensor.blackThreshold) {
+			curr = cBlack;
+			break;
+		}
+		if (green > sensor.whiteThreshold) {
+			curr = cWhite;
+			break;
+		}
+		if ((float)green/blue > sensor.greenRatio) {
+			curr = cGreen;
+			break;
+		}
+		//writeDebugStreamLine("GRADIENT %d: %d %d", sensor.address, green, red);
+		curr = cGradient;
+	} while (false);
+	sensor.currentColor = curr;
+	return curr;
 }
 
 bool seeBlackArray()
@@ -288,12 +329,40 @@ bool seeLine()
 	return (leftL != cWhite || leftM != cWhite || middle != cWhite || rightM != cWhite || rightR != cWhite);
 }
 
+void openServo(MindServo serv)
+{
+	NXTServo_SetPosition(servoController, SERVO_CONTROLLER_ADDRESS, serv.port, serv.open);
+}
+
+void closeServo(MindServo serv)
+{
+	NXTServo_SetPosition(servoController, SERVO_CONTROLLER_ADDRESS, serv.port, serv.close);
+}
+
+void setPositionArduino(ArduinoServo serv, int position)
+{
+	tByteArray send;
+	send[0] = 4;
+	send[1] = ARDUINO_ADDRESS;
+	send[2] = serv.address;
+	send[3] = (position >> 8) & 0xFF;
+	send[4] = (position) & 0xFF;
+	writeI2C(arduino,send);
+}
+
+void setSpeedServo(SpeedServo serv)
+{
+
+}
+
 void lowerClaw()
 {
+
 }
 
 void raiseClaw()
 {
+
 }
 
 void suspend()

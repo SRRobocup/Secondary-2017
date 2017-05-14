@@ -6,7 +6,7 @@
 
 void setup()
 {
-	arduino = S1;
+	arduino = S3;
 	MSLSA = S3;
 	LMotor = motorA;
 	RMotor = motorC;
@@ -34,12 +34,13 @@ task main()
 	clearDebugStream();
 	int r,g,b;
 	while (true) {
-		//writeDebugStreamLine("LEFT LASER: %f",getDistance(leftDist));
-		//displayTextLine(0,"LEFT: %f",getDistance(leftDist));
-		writeDebugStreamLine("MIDDLE: %f",getDistance(frontDist));
-		displayTextLine(1,"MIDDLE: %f",getDistance(frontDist));
+		writeDebugStreamLine("LEFT LASER: %f",getDistance(leftDist));
+		displayTextLine(0,"LEFT: %f",getDistance(leftDist));
+		//writeDebugStreamLine("MIDDLE: %f",getDistance(frontDist));
+		//displayTextLine(1,"MIDDLE: %f",getDistance(frontDist));
 		writeDebugStreamLine("RIGHT LASER: %f",getDistance(rightDist));
 		displayTextLine(2,"RIGHT: %f",getDistance(rightDist));
+		writeDebugStreamLine("FRONT PING: %f",getDistance(frontPing));
 		//delay(5);
 		getColorRGB(leftFrontL,r,g,b);
 		writeDebugStreamLine("LF COLOR %x: %d %d %d %d",LEFT_FRONT,r,g,b,leftFrontL.clear);
@@ -62,6 +63,6 @@ task main()
 		displayTextLine(7,"RF: %d %d %d %d",r,g,b,rightFrontR.clear);
 
 		writeDebugStreamLine("------------------------------------------------------------------------------");
-		//delay(750);
+		//delay(500);
 	}
 }
