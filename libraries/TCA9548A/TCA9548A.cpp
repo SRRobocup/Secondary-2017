@@ -50,7 +50,7 @@ void TCA9548A::select(uint8_t pin)
 	Wire.endTransmission();  
 }
 
-void TCA9548::disable()
+void TCA9548A::disable()
 {
 	Wire.beginTransmission(address);
 	Wire.write(0);

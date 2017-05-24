@@ -5,7 +5,7 @@ void setup()
 {
   Wire.begin();
 
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("\nI2C Scanner");
 }
 
@@ -50,5 +50,5 @@ void loop()
   else
     Serial.println("done\n");
 
-  delay(5000);           // wait 5 seconds for next scan
+  delay(2500);           // wait 5 seconds for next scan
 }
