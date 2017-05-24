@@ -12,4 +12,6 @@
 #define MIDDLE_FRONT 0x52
 #define RIGHT_MIDDLE 0x53
 #define RIGHT_FRONT 0x54
+#define FRONT_SERVO 0x55
+#define TOUCH_SENSOR 0x56
 #endif

@@ -1,3 +1,5 @@
+#include <Servo.h>
+
 #include <TCA9548A.h>
 #include <Adafruit_TCS34725.h>
 #include "C:\Users\ethan_000\Documents\Git Repos\RCJ Secondary 2017\Register.h"
@@ -5,30 +7,46 @@
 #include <VL53L0X.h>
 
 #define HIGH_SPEED
-#define DEBUG
+//#define DEBUG
 
 VL53L0X longRange = VL53L0X();
+VL53L0X longRange5 = VL53L0X(10);
 
 TCA9548A mux = TCA9548A();
 
 Adafruit_TCS34725 colorSensor = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 
-const int pingPins[] = {7,11,9};
+Servo frontCRV;
+
+const int pingPins[] = {7,3,9};
+const int buttons[2] = {6,7};
 volatile uint16_t currentTag = 0;
 volatile uint8_t currentCommand = 0;
 volatile uint8_t bytesToSend = 0;
 volatile byte buff[8] = {0,0,0,0,0,0,0,0};
 volatile byte lastSent[8] = {0,0,0,0,0,0,0,0};
+volatile int servoPosition = 0;
 int pingBuffer = 0;
+int lastPing = 0;
 uint16_t red, blue, green, clear;
 bool set = false;
-const int frontPingPin = 11;
+const int frontPingPin = 10;
+const int frontServoPin = 11;
+boolean isTriggered = false;
+volatile boolean isInterrupted = false;
 
 void setup() {
   Serial.begin(115200);
+
+  pinMode(buttons[0],INPUT_PULLUP);
+  pinMode(buttons[1],INPUT_PULLUP);
+  
   Wire.begin(0x08 >> 1); 
   Wire.onReceive(receiveEvent);
   Wire.onRequest(requestEvent);
+  
+  frontCRV.attach(frontServoPin);
+  frontCRV.write(90);
 
 //  TWBR = 12;
   // init all sensors
@@ -43,14 +61,23 @@ void setup() {
     longRange.setMeasurementTimingBudget(20000);
     longRange.startContinuous();
   }
-
   Serial.print("START CODE: ");
   Serial.println(mux.disable());
+//  longRange5.init();
+//  longRange5.setTimeout(500);
+//  longRange5.setMeasurementTimingBudget(20000);
+//  longRange5.setAddress(0x53);
+//  longRange5.startContinuous();
 }
 
 //get first byte and set to data and discard all other bytes
 void receiveEvent(int bytesReceived) {
+  isInterrupted = true;
   currentTag = Wire.read();
+//  if (currentTag == FRONT_SERVO) {
+//    servoPosition = Wire.read() << 8;
+//    servoPosition = Wire.read() | servoPosition;
+//  }
   for (int i = 1; Wire.available(); i++) {
     currentCommand = Wire.read();
   }
@@ -61,8 +88,36 @@ void requestEvent() {
   byte realBuff[8];
   for (int i = 0; i < 8; i++) {
     realBuff[i] = buff[i];
+    buff[i] = 0xFF;
   }
   Wire.write(realBuff,bytesToSend);
+}
+
+unsigned long pulseInLongEx(uint8_t pin, uint8_t state, unsigned long timeout)
+{
+  uint8_t bit = digitalPinToBitMask(pin);
+  uint8_t port = digitalPinToPort(pin);
+  uint8_t stateMask = (state ? bit : 0);
+  
+  unsigned long startMicros = micros();
+  
+  while ((*portInputRegister(port) & bit) == stateMask) {
+    if (micros() - startMicros > timeout || isInterrupted)
+      return 0;
+  }
+
+  while ((*portInputRegister(port) & bit) != stateMask) {
+    if (micros() - startMicros > timeout || isInterrupted)
+      return 0;
+  }
+
+  unsigned long start = micros();
+  
+  while ((*portInputRegister(port) & bit) == stateMask) {
+    if (micros() - startMicros > timeout || isInterrupted)
+      return 0;
+  }
+  return micros() - start;
 }
 
 void flushBuffer() {
@@ -84,6 +139,7 @@ void printArr(volatile byte* buff, int n) {
 
 void loop() {
   //based on read from receive event, gather data from sensors
+  int tempPosition;
   switch (currentTag) {
     case COMMAND_REG:
       switch (currentCommand)
@@ -102,12 +158,16 @@ void loop() {
     case LEFT_LASER:
     case FRONT_LASER:
     case RIGHT_LASER:
-      mux.select(5 + (currentTag - LEFT_LASER));
-      split(&buff[0], longRange.readRangeContinuousMillimeters());
-//      status = (data == 8190);
+//      if (currentTag - LEFT_LASER == 0) {
+//        split(&buff[0], longRange5.readRangeContinuousMillimeters());
+//      } else 
+      {
+        mux.select(5 + (currentTag - LEFT_LASER));
+        split(&buff[0], longRange.readRangeContinuousMillimeters());
+  //      status = (data == 8190);
+        mux.disable();
+      }
       bytesToSend = 2;
-      mux.disable();
-      currentTag = -1;
       set = true;
       break;
 //    case 0x45:
@@ -117,22 +177,11 @@ void loop() {
 //      status = (data == 8190);
 //      bytesToSend = 2;
 //      break;
-    case LEFT_PING:
+//    case LEFT_PING:
     case FRONT_PING:
-    case RIGHT_PING:
-      pinMode(pingPins[currentTag - LEFT_PING], OUTPUT);
-      digitalWrite(pingPins[currentTag - LEFT_PING], LOW);
-      delayMicroseconds(2);
-      digitalWrite(pingPins[currentTag - LEFT_PING], HIGH);
-      delayMicroseconds(5);
-      digitalWrite(pingPins[currentTag - LEFT_PING], LOW);
-    
-      pinMode(pingPins[currentTag - LEFT_PING], INPUT);
-      pingBuffer = pulseIn(pingPins[currentTag - LEFT_PING], HIGH);
-      delayMicroseconds(1000);
+//    case RIGHT_PING:
       split(&buff[0], pingBuffer);
       bytesToSend = 2;
-      currentTag = -1;
       set = true;
       break;
     case LEFT_FRONT:
@@ -155,39 +204,70 @@ void loop() {
       split(&buff[6], red);
       bytesToSend = 8;
       mux.disable();
-      currentTag = -1;
       set = true;
       break;
+    case FRONT_SERVO:
+      tempPosition = servoPosition;
+      frontCRV.write(tempPosition);
+      set = true;
+      break;
+    case TOUCH_SENSOR: 
+      buff[0] = isTriggered;
+      bytesToSend = 1;
+      set = true;
   }
   if (set) {
     Serial.print("SENT TAG: ");
     Serial.print(currentTag, HEX);
-    Serial.print(" , DATA: ");
+    Serial.print("DATA: ");
     printArr(buff,bytesToSend);
     set = false;
+    currentTag = -1;
   }
   if (lastSent[0] != 0)
     printArr(lastSent,8);
   //reset tag
   //Serial.println(bytesToSend);
-  if (Serial.available() > 1)
-  {
-    Serial.print("Recieved "); Serial.print(Serial.available()); Serial.println(" bytes");
-    Serial.flush();
-    char buff[3];
-    int i = Serial.readBytes(buff,2);
-    buff[i] = '\0';
-    Serial.print(buff);
-    currentTag = strtol(buff, NULL, 16);
-    Serial.print(" ");
-    if (Serial.available() > 2 && Serial.read() == ' ') {
-      char buff[3];
-      int i = Serial.readBytes(buff,2);
-      buff[i] = '\0';
-      Serial.print(buff);
-      currentCommand = strtol(buff, NULL, 16);
-    }
-    Serial.println();
-    flushBuffer();
+//  isTriggered = (digitalRead(buttons[0]) == HIGH) || (digitalRead(buttons[1]) == HIGH);
+  
+  pinMode(pingPins[1], OUTPUT);
+  digitalWrite(pingPins[1], LOW);
+  delayMicroseconds(2);
+  digitalWrite(pingPins[1], HIGH);
+  delayMicroseconds(5);
+  digitalWrite(pingPins[1], LOW);
+  
+  pinMode(pingPins[1], INPUT);
+  lastPing = pingBuffer;
+  pingBuffer = pulseInLongEx(pingPins[1], HIGH, 1000000);
+  #ifdef DEBUG
+    Serial.print(lastPing); Serial.print(" "); Serial.print(pingBuffer); Serial.print(" "); Serial.println(isInterrupted);
+  #endif
+  if (isInterrupted) {
+    pingBuffer = lastPing;
+    isInterrupted = false;
+    return;
   }
+  delay(2);
+  
+//  if (Serial.available() > 1)
+//  {
+//    Serial.print("Recieved "); Serial.print(Serial.available()); Serial.println(" bytes");
+//    Serial.flush();
+//    char buff[3];
+//    int i = Serial.readBytes(buff,2);
+//    buff[i] = '\0';
+//    Serial.print(buff);
+//    currentTag = strtol(buff, NULL, 16);
+//    Serial.print(" ");
+//    if (Serial.available() > 2 && Serial.read() == ' ') {
+//      char buff[3];
+//      int i = Serial.readBytes(buff,2);
+//      buff[i] = '\0';
+//      Serial.print(buff);
+//      currentCommand = strtol(buff, NULL, 16);
+//    }
+//    Serial.println();
+//    flushBuffer();
+//  }
 }

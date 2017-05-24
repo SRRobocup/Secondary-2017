@@ -6,6 +6,7 @@ void setup()
 	MSLSA = S3;
 	LMotor = motorA;
 	RMotor = motorC;
+	motor[motorB] = 0;
 	bMotorReflected[LMotor] = true;
 	bMotorReflected[RMotor] = true;
 	SensorType[arduino] = sensorI2CCustom9V;
@@ -23,7 +24,7 @@ void setup()
 	generateColor(&rightFrontR,RIGHT_FRONT,values[20],values[21],values[22],values[23],values[24],true);
 }
 
-const float kP = 8
+const float kP = 8;
 const float kI = 0;
 const float kD = 0;
 float P, I, D, lastP;
@@ -35,22 +36,26 @@ task main()
 {
 	setup();
 	int r,g,b,c;
+	SensorType[S1] = sensorTouch;
 	while (true)
 	{
-		P = getDistance(rightDist) - threshold;
-		writeDebugStreamLine("P: %f", P);
-		I += P;
-		if (abs(P) < 1.5)
-			I = 0;
-		D = P - lastP;
-		adjust = P*kP + I*kI + D*kD;
-		adjust = 0;
-		motor[LMotor] = tp + adjust;
-		motor[RMotor] = tp - adjust;
+		//P = getDistance(rightDist) - threshold;
+		//writeDebugStreamLine("P: %f", P);
+		//I += P;
+		//if (abs(P) < 1.5)
+		//	I = 0;
+		//D = P - lastP;
+		//adjust = P*kP + I*kI + D*kD;
+		//adjust = 0;
+		//motor[LMotor] = tp + adjust;
+		//motor[RMotor] = tp - adjust;
 		//delay(1);
 	//writeDebugStreamLine("DIST: %f", getDistance(rightDist));
 		//getColorRGB(middleFront,r,g,b,c);
 		//writeDebugStreamLine("COLOR: %d",c);
 		//delay(500);
+		//writeDebugStreamLine("%d",SensorValue[S1]);
+	motor[LMotor] = forward;
+	motor[RMotor] = forward;
 	}
 }
