@@ -15,10 +15,10 @@ unsigned int lastTurn  = 00100;
 unsigned int getState()
 {
 	return (int) leftFrontL.currentColor*10000 +
-	            leftFrontM.currentColor*1000 +
-	            middleFront.currentColor*100 +
-	            rightFrontM.currentColor*10 +
-	            rightFrontR.currentColor;
+	       (int) leftFrontM.currentColor*1000 +
+	       (int) middleFront.currentColor*100 +
+	       (int) rightFrontM.currentColor*10 +
+	       (int) rightFrontR.currentColor;
 }
 
 void arrayPID()
@@ -27,16 +27,15 @@ void arrayPID()
 	int upperLimit = 75;
 	int lowerLimit = 30;
 	float kp = 0.02;
-	float forwardDistance = 7;
 	int tp = 30;
 	int curr;
 	MSLSAreadSensors(MSLSA,values);
 	curr = (upperLimit - clamp(values[0],lowerLimit,upperLimit)) * 500 +
 	(upperLimit - clamp(values[1],lowerLimit,upperLimit)) * 100 +
-	(upperLimit - clamp(values[2],lowerLimit,upperLimit)) * 20 +
+	(upperLimit - clamp(values[2],lowerLimit,upperLimit)) * 30 +
 	(upperLimit - clamp(values[3],lowerLimit,upperLimit)) * 1 +
 	(upperLimit - clamp(values[4],lowerLimit,upperLimit)) * -1 +
-	(upperLimit - clamp(values[5],lowerLimit,upperLimit)) * -20 +
+	(upperLimit - clamp(values[5],lowerLimit,upperLimit)) * -30 +
 	(upperLimit - clamp(values[6],lowerLimit,upperLimit)) * -100 +
 	(upperLimit - clamp(values[7],lowerLimit,upperLimit)) * -500;
 	motor[LMotor] = tp - curr*kp;
@@ -46,11 +45,13 @@ void arrayPID()
 void lineTrace()
 {
 	//0.002, 0.001, 0.0015
-	const float kP = 0.001, kI = 0.000, kD = 0.000;
+	const float kP = 0.0013, kI = 0.000, kD = 0.0005;
 	float P,I = 0,D, lastP;
 	float adjust;
-	float forwardDistance = 7;
+	float forwardDistance = 5.6;
+	bool tag = false;
 	unsigned int state = getState();
+	bool lastLight[5] = {leftFrontL.isLight,leftFrontM.isLight,middleFront.isLight,rightFrontM.isLight,rightFrontR.isLight};
 	writeDebugStreamLine("UNCHANGED STATE: %d",state);
 	if (!(leftFrontM.currentColor == cGreen && rightFrontM.currentColor == cGreen))
 	{
@@ -69,9 +70,14 @@ void lineTrace()
 				state = 02020;
 			else
 			if (leftFrontL.currentColor == cBlack)
+			{
+				playSound(soundBlip);
 				state = RIGHTGREEN;
+			}
 			else
+			{
 				state = LEFTGREEN;
+			}
 		}
 		else if (rightFrontM.currentColor == cGreen)
 		{
@@ -79,9 +85,14 @@ void lineTrace()
 				state = 02020;
 			else
 			if (rightFrontR.currentColor == cBlack)
+			{
+				playSound(soundBlip);
 				state = LEFTGREEN;
+			}
 			else
+			{
 				state = RIGHTGREEN;
+			}
 		}
 		switch (state)
 		{
@@ -91,15 +102,22 @@ void lineTrace()
 			case 1030:
 				state = lastTurn;
 				break;
-			case 33:
 			case 30:
 			case 3:
 				state = RIGHTMBLACK;
+				break;
+			case -1:
+				state = RIGHTRBLACK + RIGHTMBLACK;
 				break;
 		}
 	}
 	else
 		state = 02020;
+
+	if (state == 33 && (lastState == RIGHTGREEN || lastState == LEFTGREEN))
+		state = RIGHTMBLACK + RIGHTRBLACK;
+	if (state == 33000 && (lastState == RIGHTGREEN || lastState == LEFTGREEN))
+		state = LEFTMBLACK + LEFTLBLACK;
 	if (state == NONE && lastState == (LEFTLBLACK + LEFTMBLACK) && lastState == (RIGHTRBLACK + RIGHTMBLACK))
  	{
  		int dir = lastState == (LEFTLBLACK + LEFTMBLACK) ? 1 : -1;
@@ -128,7 +146,7 @@ void lineTrace()
 			{
 				if (seeLine())
 				{
-					writeDebugStreamLine("FOUND LINE");
+					writeDebugStreamLine("FOUND LINE %d", getState());
 					return;
 				}
 			}
@@ -151,6 +169,12 @@ void lineTrace()
 						writeDebugStreamLine("FOUND LINE");
 						return;
 					}
+					if (getColor(leftFrontM) == cGreen || getColor(rightFrontM) == cGreen)
+					{
+						playSound(soundException);
+						stopMotors();
+						return;
+					}
 					arrayPID();
 				}
 				writeDebugStreamLine("ITERATION %d DONE",i);
@@ -159,7 +183,7 @@ void lineTrace()
 			motor[LMotor] = forward;
 			motor[RMotor] = forward;
 			while (seeLine()){}
-			while (!seeLine()) {}
+			while (!seeLine()){}
 			stopMotors();
 			break;
 		case LEFTGREEN + RIGHTGREEN:
@@ -173,22 +197,33 @@ void lineTrace()
 		case LEFTGREEN:
 			displayTextLine(0,"State: LEFTGREEN");
 			writeDebugStreamLine("LEFTGREEN");
+			resetEncoders();
 			motor[LMotor] = forward;
 			motor[RMotor] = forward;
-			while (leftFrontM == cGreen || leftFrontM.currentColor == cGradient){ leftFrontM.currentColor = getColor(leftFrontM); }
-			if (leftFrontM.currentColor == cWhite)
+			while ((getColor(leftFrontM) == cGreen || leftFrontM.currentColor == cGradient) && abs(nMotorEncoder[LMotor]) < 3*cm){writeDebugStreamLine("WAITING %d",nMotorEncoder[LMotor]);}
+			if(abs(nMotorEncoder[LMotor]) >= 3*cm)
+				goBack(nMotorEncoder[LMotor]/cm);
+			else if (leftFrontM.currentColor == cWhite && getColor(leftFrontM) == cWhite)
+			{
+				playSound(soundBeepBeep);
+				writeDebugStreamLine("SKIPPED GREEN");
 				return;
+			}
+			else
+				writeDebugStreamLine("LEFT COLOR: %d", leftFrontM.currentColor);
 			lastTurn = RIGHTMBLACK;
 			goStraight(forwardDistance);
-			turnLeft(10);
+			turnLeft(30);
 			nMotorEncoder[RMotor] = 0;
 			motor[LMotor] = -forward;
 			motor[RMotor] = forward;
 			while (getColor(middleFront) != cWhite){}
-			while (getColor(middleFront) == cWhite && nMotorEncoder[RMotor] < wheelbase*PI*2/9*cm){}
-			if (nMotorEncoder[RMotor] >= wheelbase*PI/4*cm)
+			while ((getColor(middleFront) == cWhite || getColor(middleFront) == cWhite) && nMotorEncoder[RMotor] < wheelbase*PI/6*cm){}
+			if (nMotorEncoder[RMotor] >= wheelbase*PI/6*cm)
 				return;
+			writeDebugStreamLine("MIDDLE COLOR: %d",middleFront.currentColor);
 			while (getColor(leftFrontL) != cWhite || getColor(leftFrontM) == cBlack || getColor(rightFrontM) == cBlack){}
+			writeDebugStreamLine("STATE: %d",getState());
 			//while (getColor(middleFront) != cWhite){}
 			//motor[LMotor] = forward;
 			//motor[RMotor] = -forward;
@@ -200,22 +235,33 @@ void lineTrace()
 		case RIGHTGREEN:
 			displayTextLine(0,"State: RIGHTGREEN");
 			writeDebugStreamLine("RIGHTGREEN");
+			resetEncoders();
 			motor[LMotor] = forward;
 			motor[RMotor] = forward;
-			while (rightFrontM.currentColor == cGreen || rightFrontM.currentColor == cGradient){ rightFrontM.currentColor = getColor(rightFrontM); }
-			if (rightFrontM.currentColor == cWhite)
+			while ((getColor(rightFrontM) == cGreen || rightFrontM.currentColor == cGradient) && abs(nMotorEncoder[LMotor]) < 3*cm){writeDebugStreamLine("WAITING %d",nMotorEncoder[LMotor]);}
+			if(abs(nMotorEncoder[LMotor]) >= 3*cm)
+				goBack(nMotorEncoder[LMotor]/cm);
+			else if (rightFrontM.currentColor == cWhite && getColor(rightFrontM) == cWhite)
+			{
+				playSound(soundBeepBeep);
+				writeDebugStreamLine("SKIPPED GREEN");
 				return;
+			}
+			else
+				writeDebugStreamLine("RIGHT COLOR: %d", rightFrontM.currentColor);
 			lastTurn = LEFTMBLACK;
 			goStraight(forwardDistance);
-			turnRight(10);
+			turnRight(30);
 			nMotorEncoder[LMotor] = 0;
 			motor[LMotor] = forward;
 			motor[RMotor] = -forward;
 			while (getColor(middleFront) != cWhite){}
-			while (getColor(middleFront) == cWhite && nMotorEncoder[LMotor] < wheelbase*PI*2/9*cm){}
-			if (nMotorEncoder[LMotor] >= wheelbase*PI/4*cm)
+			while ((getColor(middleFront) == cWhite || getColor(middleFront) == cWhite) && nMotorEncoder[LMotor] < wheelbase*PI/6*cm){}
+			if (nMotorEncoder[LMotor] >= wheelbase*PI/6*cm)
 				return;
+			writeDebugStreamLine("MIDDLE COLOR: %d",middleFront.currentColor);
 			while (getColor(rightFrontR) != cWhite || getColor(leftFrontM) == cBlack || getColor(rightFrontM) == cBlack){}
+			writeDebugStreamLine("STATE: %d",getState());
 			//while (getColor(middleFront) != cWhite){}
 			//motor[LMotor] = -forward;
 			//motor[RMotor] = forward;
@@ -250,33 +296,66 @@ void lineTrace()
 			nMotorEncoder[LMotor] = 0;
 			while (nMotorEncoder[LMotor] < forwardDistance*cm)
 			{
-				if (getColor(rightFrontM) == cBlack)
+				if (getColor(rightFrontM) == cGreen || getColor(leftFrontM) == cGreen)
 					return;
 			}
 			//lastTurn = LEFTMBLACK;
 			turnLeft(90);
-			motor[LMotor] = forward;
-			motor[RMotor] = -forward;
-			nMotorEncoder[LMotor] = 0;
-			while (getColor(middleFront) != cWhite){}
-			while (!seeLine() && nMotorEncoder[LMotor] < wheelbase*PI/4*cm){}
-			if (nMotorEncoder[LMotor] < wheelbase*PI/4*cm)
+			if (getColor(middleFront) != cBlack) {
+				motor[LMotor] = forward*2/3;
+				motor[RMotor] = -forward*2/3;
+				nMotorEncoder[LMotor] = 0;
+				//while (getColor(middleFront) != cWhite){}
+				while (!seeLine() && nMotorEncoder[LMotor] < wheelbase*PI/4*cm)
+				{
+					writeDebugStreamLine("ENCODER: %d" , nMotorEncoder[LMotor]);
+					writeDebugStreamLine("STATE: %d",getState());
+					if (nMotorEncoder[LMotor] > wheelbase*PI/8*cm)
+					{
+						motor[LMotor] = forward;
+						motor[RMotor] = -forward;
+					}
+				}
+			}
+			else
+				tag = true;
+			if (nMotorEncoder[LMotor] < wheelbase*PI/4*cm || tag)
 			{
+				writeDebugStreamLine("FOUND A LINE");
 				//while (getColor(middleFront) != cWhite){}
 				//motor[LMotor] = forward;
 				//motor[RMotor] = -forward;
 				//while (getColor(middleFront) == cWhite){}
 				//motor[LMotor] = -forward;
 				//motor[RMotor] = forward;
-				while (getColor(rightFrontR) != cWhite || getColor(leftFrontM) == cBlack || getColor(rightFrontM) == cBlack){}
-				if (getColor(leftFrontL) == cBlack)
+				//if(getColor(leftFrontL) == cBlack || getColor(leftFrontM) == cBlack)
+				//{
+				//	playSound(soundBeepBeep);
+				//	writeDebugStreamLine("SKIPPED CHECK");
+				//	stopMotors();
+				//	return;
+				//}
+				while (!tag && (getColor(rightFrontR) != cWhite || getColor(leftFrontM) == cBlack || getColor(rightFrontM) == cBlack))
+				{
+					writeDebugStreamLine("STATE: %d",getState());
+					if (leftFrontM.currentColor == cGreen|| rightFrontM.currentColor == cGreen)
+						return;
+					if (leftFrontM.currentColor == cBlack && getColor(leftFrontL) == cBlack)
+						break;
+					if (rightFrontM.currentColor == cBlack && getColor(rightFrontR) == cBlack)
+						break;
+				}
+				if (!tag && getColor(leftFrontL) == cBlack)
 					while (getColor(middleFront) == cWhite){}
+				nMotorEncoder[LMotor] = 0;
 				motor[LMotor] = -forward;
 				motor[RMotor] = -forward;
-				while ((getColor(leftFrontM) != cBlack || getColor(rightFrontM) != cBlack) && abs(nMotorEncoder[LMotor]) < 5*cm){}
-				if (abs(nMotorEncoder[LMotor]) >= 5*cm)
-					while (getColor(leftFrontM) == cBlack || getColor(rightFrontM) == cBlack){}
-				if (!(getColor(leftFrontM) == cGreen || getColor(rightFrontM) == cGreen))
+				while ((getColor(leftFrontM) != cBlack && getColor(rightFrontM) != cBlack && leftFrontM.currentColor != cGreen && rightFrontM.currentColor != cGreen) && abs(nMotorEncoder[LMotor]) < 5*cm){}
+				if (abs(nMotorEncoder[LMotor]) < 5*cm && leftFrontM.currentColor != cGreen && rightFrontM.currentColor != cGreen)
+					while (getColor(leftFrontM) == cBlack || getColor(rightFrontM) == cBlack || leftFrontM.currentColor == cGradient || rightFrontM.currentColor == cGradient){}
+				else
+					writeDebugStreamLine("HAHA I FOOLED YOU");
+				if (!(getColor(leftFrontM) == cGreen || getColor(rightFrontM) == cGreen || getColor(leftFrontL) == cGreen || getColor(rightFrontR) == cGreen))
 					goStraight(abs(nMotorEncoder[LMotor])/cm);
 			}
 			else if (!seeLine())
@@ -285,7 +364,7 @@ void lineTrace()
 				if(nMotorEncoder[LMotor] >= wheelbase*PI/2*cm)
 				{
 					stopMotors();
-					turnLeft(180);
+					turnLeft(170);
 					return;
 				}
 				while (getColor(rightFrontR) == cBlack || getColor(leftFrontM) == cBlack || getColor(rightFrontM) == cBlack){}
@@ -301,42 +380,92 @@ void lineTrace()
 			nMotorEncoder[LMotor] = 0;
 			while (nMotorEncoder[LMotor] < forwardDistance*cm)
 			{
-				if (getColor(leftFrontM) == cBlack)
+				//playSound(soundshortBlip);
+				if (getColor(leftFrontM) == cGreen || getColor(rightFrontM) == cGreen)
 					return;
 			}
 			//lastTurn = RIGHTMBLACK;
 			turnRight(90);
-			motor[LMotor] = -forward;
-			motor[RMotor] = forward;
-			nMotorEncoder[RMotor] = 0;
-			while (getColor(middleFront) != cWhite){}
-			while (!seeLine() && nMotorEncoder[RMotor] < wheelbase*PI/4*cm){}
-			if (nMotorEncoder[RMotor] < wheelbase*PI/4*cm)
+			if (getColor(middleFront) != cBlack)
 			{
+				motor[LMotor] = -forward;
+				motor[RMotor] = forward;
+				nMotorEncoder[RMotor] = 0;
+				//while (getColor(middleFront) != cWhite){}
+				while (!seeLine() && nMotorEncoder[RMotor] < wheelbase*PI/4*cm)
+				{
+					writeDebugStreamLine("ENCODER: %d" , nMotorEncoder[RMotor]);
+					writeDebugStreamLine("STATE: %d",getState());
+					writeDebugStreamLine("");
+					if (nMotorEncoder[RMotor] > wheelbase*PI/8*cm)
+					{
+						motor[LMotor] = -forward;
+						motor[RMotor] = forward;
+					}
+				}
+				writeDebugStreamLine("STATE: %d",getState());
+			}
+			else
+				tag = true;
+			if (nMotorEncoder[RMotor] < wheelbase*PI/4*cm || tag)
+			{
+				writeDebugStreamLine("FOUND A LINE");
 				//while (getColor(middleFront) != cWhite){}
 				//motor[LMotor] = -forward;
 				//motor[RMotor] = forward;
 				//while (getColor(middleFront) == cWhite){}
 				//motor[LMotor] = forward;
 				//motor[RMotor] = -forward;
-				while (getColor(leftFrontL) != cWhite || getColor(leftFrontM) == cBlack || getColor(rightFrontM) == cBlack){}
-				if (getColor(rightFrontR) == cBlack)
+				//if(getColor(rightFrontM) == cBlack && getColor(rightFrontR) == cBlack)
+				//{
+				//	playSound(soundBeepBeep);
+				//	writeDebugStreamLine("SKIPPED CHECK");
+				//	stopMotors();
+				//	return;
+				//}
+				while (!tag && (getColor(leftFrontL) != cWhite || getColor(leftFrontM) == cBlack || getColor(rightFrontM) == cBlack))
+				{
+					writeDebugStreamLine("STATE: %d",getState());
+					if (leftFrontM.currentColor == cGreen|| rightFrontM.currentColor == cGreen)
+						return;
+					if (leftFrontM.currentColor == cBlack && getColor(leftFrontL) == cBlack)
+						break;
+					if (rightFrontM.currentColor == cBlack && getColor(rightFrontR) == cBlack)
+						break;
+				}
+				if (!tag && getColor(rightFrontR) == cBlack)
 					while (getColor(middleFront) == cWhite){}
+				nMotorEncoder[LMotor] = 0;
 				motor[LMotor] = -forward;
 				motor[RMotor] = -forward;
-				while ((getColor(leftFrontM) != cBlack || getColor(rightFrontM) != cBlack) && abs(nMotorEncoder[LMotor]) < 5*cm){}
-				if (abs(nMotorEncoder[LMotor]) >= 5*cm)
-					while (getColor(leftFrontM) == cBlack || getColor(rightFrontM) == cBlack){}
-				if (!(getColor(leftFrontM) == cGreen || getColor(rightFrontM) == cGreen))
-					goStraight(abs(nMotorEncoder[LMotor])/cm);
+				while ((getColor(leftFrontM) != cBlack && getColor(rightFrontM) != cBlack && leftFrontM.currentColor != cGreen && rightFrontM.currentColor != cGreen) && abs(nMotorEncoder[LMotor]) < 5*cm)
+				{
+					writeDebugStreamLine("STATE: %d",getState());
+				}
+				if (abs(nMotorEncoder[LMotor]) < 5*cm && leftFrontM.currentColor != cGreen && rightFrontM.currentColor != cGreen)
+					while (getColor(leftFrontM) == cBlack || getColor(rightFrontM) == cBlack || leftFrontM.currentColor == cGradient || rightFrontM.currentColor == cGradient){}
+				else
+					writeDebugStreamLine("HAHA I FOOLED YOU");
+				writeDebugStreamLine("FINAL STATE: %d",getState());
+				if (!(getColor(leftFrontM) == cGreen || getColor(rightFrontM) == cGreen || getColor(leftFrontL) == cGreen || getColor(rightFrontR) == cGreen))
+				{
+					motor[LMotor] = forward;
+					motor[RMotor] = forward;
+					while(abs(nMotorEncoder[LMotor]) > 10)
+					{
+						if (getColor(leftFrontM) == cGreen || getColor(rightFrontM) == cGreen)
+							break;
+					}
+				}
 			}
 			else
 			{
+				writeDebugStreamLine("ME BAD");
 				while (!seeLine() && nMotorEncoder[RMotor] < wheelbase*PI/2*cm){}
 				if(nMotorEncoder[RMotor] >= wheelbase*PI/2*cm)
 				{
 					stopMotors();
-					turnRight(180);
+					turnRight(170);
 					return;
 				}
 				while (getColor(leftFrontL) == cBlack || getColor(leftFrontM) == cBlack || getColor(rightFrontM) == cBlack){}
