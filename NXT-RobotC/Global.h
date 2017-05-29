@@ -2,7 +2,7 @@
 #define __GLOBAL.H__
 #include "common.h"
 #include "mindsensors-lightsensorarray.h"
-#include "C:\Users\ethan_000\Documents\Git Repos\RCJ Secondary 2017\Register.h"
+#include "Register.h"
 #include "NXTServo-lib.c"
 #define ARDUINO_ADDRESS 0x08
 #define SERVO_CONTROLLER_ADDRESS 0xb0
@@ -75,9 +75,9 @@ MindServo dumperServo;
 MindServo clawServo;
 ArduinoServo frontColorServo;
 int forward = 30;
-int turnForward = 65;
+int turnForward = 50;
 int turnBackward = -15;
-const float wheelbase = 15.7;
+const float wheelbase = 16.5;
 const float width = 13.5;
 const float length = 15;
 const float diameter = 3;
@@ -142,29 +142,42 @@ void stopMotors()
 	motor[RMotor] = 0;
 }
 
+void resetSync()
+{
+#ifdef NXT
+	nSyncedMotors = synchNone;
+#endif
+}
+
 // turning the robot right a certain amount of degrees
 void turnRight(float deg, int power = forward)
 {
-	float target = wheelbase*PI*(deg/360)*cm;
+	float wheelbaseEx = wheelbase;
+	float target = wheelbaseEx*PI*(deg/360)*cm;
 	resetEncoders();
 	nMotorEncoderTarget[LMotor] = target;
+	nSyncedMotors = synchAC;
+	nSyncedTurnRatio = -100;
 	motor[LMotor] = power;
-	motor[RMotor] = -power;
 	while(stillRunning(LMotor)){}
+	resetSync();
 	stopMotors();
-	//wait1Msec(100);
+	delay(100);
 }
 
 void turnLeft(float deg, int power = forward)
 {
-	float target = wheelbase*PI*(deg/360)*cm;
+	float wheelbaseEx = wheelbase;
+	float target = wheelbaseEx*PI*(deg/360)*cm;
 	resetEncoders();
-	nMotorEncoderTarget[RMotor] = target;
+	nMotorEncoderTarget[LMotor] = -target;
+	nSyncedMotors = synchAC;
+	nSyncedTurnRatio = -100;
 	motor[LMotor] = -power;
-	motor[RMotor] = power;
-	while(stillRunning(RMotor)){}
+	while(stillRunning(LMotor)){}
+	resetSync();
 	stopMotors();
-	//wait1Msec(100);
+	delay(100);
 }
 
 void turnAbs(float deg, int power = forward)
@@ -179,10 +192,12 @@ void goStraight(float dist, int power = forward)
 {
 	resetEncoders();
 	dist *= cm;
+	nSyncedMotors = synchAC;
 	nMotorEncoderTarget[LMotor] = dist;
+	nSyncedTurnRatio = 100;
 	motor[LMotor] = power;
-	motor[RMotor] = power;
 	while(stillRunning(LMotor)){}
+	resetSync();
 	stopMotors();
 }
 
@@ -190,10 +205,12 @@ void goBack(float dist, int power = forward)
 {
 	resetEncoders();
 	dist *= cm;
+	nSyncedMotors = synchAC;
 	nMotorEncoderTarget[LMotor] = -dist;
+	nSyncedTurnRatio = 100;
 	motor[LMotor] = -power;
-	motor[RMotor] = -power;
 	while(stillRunning(LMotor)){}
+	resetSync();
 	stopMotors();
 }
 
@@ -237,6 +254,19 @@ float getDistance(PingSensor sensor)
 	return cm;
 }
 
+float getDistanceFiltered(PingSensor sensor)
+{
+	int iter = 10;
+	float sum = 0;
+	for (int i = 0; i < iter; i++)
+	{
+		sum += getDistance(sensor);
+		delay(5);
+	}
+	sum /= iter;
+	return sum;
+}
+
 void getColorRGB(ColorSensor sensor, int& r, int& g, int& b)
 {
 	tByteArray send;
@@ -274,15 +304,22 @@ Color getColor(ColorSensor sensor)
 			return cInvalid;
 	Color curr;
 	int red,green,blue;
+	bool cont = false;
 	do {
+		cont = false;
 		getColorRGB(sensor,red,green,blue);
 		if (sensor.isLight) {
-		//if (sensor.clear > sensor.silverThreshold)
-		//	return cSilver;
-		//else
-			curr = (Color) (sensor.clear < sensor.bwThreshold);
-			break;
+			//if (sensor.clear > 9000)
+			//	curr = cSilver;
+			//else
+				curr = (Color) (sensor.clear < sensor.bwThreshold);
+				break;
 		}
+		//if (sensor.clear > 8000)
+		//{
+		//	curr = cSilver;
+		//	break;
+		//}
 		if (green < sensor.blackThreshold) {
 			curr = cBlack;
 			break;
@@ -291,13 +328,17 @@ Color getColor(ColorSensor sensor)
 			curr = cWhite;
 			break;
 		}
+		if (blue == 0){
+			cont = true;
+			continue;
+		}
 		if ((float)green/blue > sensor.greenRatio) {
 			curr = cGreen;
 			break;
 		}
 		//writeDebugStreamLine("GRADIENT %d: %d %d", sensor.address, green, red);
 		curr = cGradient;
-	} while (false);
+	} while (cont);
 	sensor.currentColor = curr;
 	return curr;
 }
@@ -325,6 +366,8 @@ bool seeLine()
 	Color middle = getColor(middleFront);
 	Color rightM = getColor(rightFrontM);
 	Color rightR = getColor(rightFrontR);
+	//if (middle == cSilver)
+	//	middle = cWhite;
 	//writeDebugStreamLine("SEELINE: %d %d %d %d %d", leftL, leftM, middle, rightM, rightR);
 	return (leftL != cWhite || leftM != cWhite || middle != cWhite || rightM != cWhite || rightR != cWhite);
 }
@@ -374,6 +417,17 @@ void suspend()
 bool equals(float val1, float val2, float tolerance)
 {
 	return abs(val1 - val2) < tolerance;
+}
+
+int getLightValue()
+{
+	tByteArray send;
+	tByteArray recieve;
+	send[0] = 2;
+	send[1] = 0x52;
+	send[2] = 0x54;
+	writeI2C(S1,send,recieve,1);
+	return (int) recieve[0];
 }
 
 #endif

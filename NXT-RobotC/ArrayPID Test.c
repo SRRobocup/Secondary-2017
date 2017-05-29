@@ -30,34 +30,34 @@ void arrayPID()
 task main()
 {
 	ubyte values[8];
-	LMotor = motorC;
-	RMotor = motorA;
+	LMotor = motorA;
+	RMotor = motorC;
 	bMotorReflected[LMotor] = true;
 	bMotorReflected[RMotor] = true;
-	MSLSA = S3;
+	MSLSA = S2;
 	SensorType[MSLSA] = sensorI2CCustom;
 	MSLSAinit(MSLSA);
-	MSLSAcalWhite(MSLSA);
-	displayTextLine(4, "Place on Black");
-	while(!getXbuttonValue(xButtonEnter)){}
-	wait1Msec(500);
-	MSLSAcalBlack(MSLSA);
-	delay(500);
-	MSLSASleep(MSLSA);
-	delay(500);
-	MSLSAinit(MSLSA);
-	displayTextLine(4, "Done Calib");
-	while(!getXbuttonValue(xButtonEnter)){}
-	wait1Msec(500);
+	//MSLSAcalWhite(MSLSA);
+	//displayTextLine(4, "Place on Black");
+	//while(!getXbuttonValue(xButtonEnter)){}
+	//wait1Msec(500);
+	//MSLSAcalBlack(MSLSA);
+	//delay(500);
+	//MSLSASleep(MSLSA);
+	//delay(500);
+	//MSLSAinit(MSLSA);
+	//displayTextLine(4, "Done Calib");
+	//while(!getXbuttonValue(xButtonEnter)){}
+	//wait1Msec(500);
 
 	motor[LMotor] = 0;
 	motor[RMotor] = 0;
 	ubyte arr[8];
 	while (true) {
-		//arrayPID();
-		MSLSAreadSensors(MSLSA,arr);
-		for (int i = 0; i < 8; i++)
-			writeDebugStream("%d ", arr[i]);
-		writeDebugStreamLine("");
+		arrayPID();
+		//MSLSAreadSensors(MSLSA,arr);
+		//for (int i = 0; i < 8; i++)
+		//	writeDebugStream("%d ", arr[i]);
+		//writeDebugStreamLine("");
 	}
 }

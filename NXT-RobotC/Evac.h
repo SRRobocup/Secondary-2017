@@ -29,7 +29,7 @@ void goStraightNoReset(float dist, int power = forward)
 	stopMotors();
 }
 
-void evac()
+void evacClaw()
 {
 	motor[LMotor] = forward;
 	motor[RMotor] = forward;
@@ -174,4 +174,125 @@ void evac()
 			nMotorEncoder[LMotor] = 0;
 		}
 	}
+}
+
+int fullClose = 8250;
+
+void openSweeper()
+{
+	nMotorEncoder[liftMotor] = 0;
+	motor[liftMotor] = -100;
+	while(nMotorEncoder[liftMotor] > -fullClose){}
+	motor[liftMotor] = 0;
+}
+
+void closeSweeper()
+{
+	nMotorEncoder[liftMotor] = 0;
+	motor[liftMotor] = 100;
+	while(nMotorEncoder[liftMotor] < fullClose){}
+	motor[liftMotor] = 0;
+}
+
+int updateCorner(int corner)
+{
+	return corner - 1 == 0 ? 4 : corner - 1;
+}
+
+void turnSweep()
+{
+	nMotorEncoder[liftMotor] = 0;
+	motor[liftMotor] = 60;
+	turnLeft(40);
+	while(nMotorEncoder[liftMotor] < 4000){}
+	turnLeft(20);
+	while(nMotorEncoder[liftMotor] < 5000){}
+	turnLeft(10);
+	while(nMotorEncoder[liftMotor] < 6500){}
+	turnLeft(20);
+	//while(nMotorEncoder[liftMotor] < 7500){}
+	//turnLeft(20);
+	while(nMotorEncoder[liftMotor] < fullClose){}
+	turnRight(20);
+	motor[liftMotor] = 0;
+}
+
+void evac()
+{
+	eraseDisplay();
+	int forwardPower = 50;
+	int startCorner = -1;
+	int currentCorner = startCorner;
+	int timeAdjust = 1000;
+	float ultraThreshold = 8.5;
+	float forwardAdjust = 1;
+	float frontDistance = getDistance(frontPing);
+	displayTextLine(1,"FRONT: %f", frontDistance);
+	turnRight(90);
+	float rightDistance = getDistance(frontPing);
+	displayTextLine(2,"RIGHT: %f", rightDistance);
+	turnLeft(190);
+	float leftDistance = getDistance(frontPing);
+	displayTextLine(3,"LEFT: %f", leftDistance);
+	if(leftDistance > rightDistance)
+	{
+		startCorner = 2;
+		motor[LMotor] = -forwardPower;
+		motor[RMotor] = -forwardPower;
+		wait1Msec(timeAdjust + 800);
+		goStraight(forwardAdjust,forwardPower);
+		stopMotors();
+	}
+	else
+	{
+		turnRight(180);
+		startCorner = 1;
+		motor[LMotor] = -forwardPower;
+		motor[RMotor] = -forwardPower;
+		wait1Msec(timeAdjust + 800);
+		goStraight(forwardAdjust,forwardPower);
+		stopMotors();
+		turnLeft(90);
+	}
+	currentCorner = startCorner;
+	openSweeper();
+	//nSyncedMotors = synchAC;
+	//nSyncedTurnRatio = 100;
+	motor[RMotor] = forwardPower + 2;
+	motor[LMotor] = forwardPower;
+	while (getColor(middleFront) != cBlack)
+	{
+		displayTextLine(0,"CORNER: %d", currentCorner);
+		if (getDistance(frontPing) < ultraThreshold)
+		{
+			delay(50);
+			if (getDistance(frontPing) < ultraThreshold)
+			{
+				delay(50);
+				if (getDistance(frontPing) < ultraThreshold)
+				{
+					resetSync();
+					turnRight(70);
+					goStraight(5);
+					turnRight(30);
+					goBack(3);
+					motor[LMotor] = -forwardPower;
+					motor[RMotor] = -forwardPower;
+					wait1Msec(timeAdjust);
+					currentCorner = updateCorner(currentCorner);
+					//nSyncedMotors = synchAC;
+					//nSyncedTurnRatio = 100;
+					motor[RMotor] = forwardPower + 1;
+					motor[LMotor] = forwardPower;
+				}
+			}
+		}
+		delay(100);
+	}
+	resetSync();
+	stopMotors();
+	turnSweep();
+	goBack(20);
+	//closeSweeper();
+	//go back to entrance
 }

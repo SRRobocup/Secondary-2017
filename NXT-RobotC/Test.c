@@ -11,6 +11,7 @@ void setup()
 	bMotorReflected[RMotor] = true;
 	SensorType[arduino] = sensorI2CCustom9V;
 	SensorType[MSLSA] = sensorI2CCustom9V;
+	SensorType[S1] = sensorI2CCustom9V;
 	leftDist.address = LEFT_LASER;
 	frontDist.address = FRONT_LASER;
 	rightDist.address = RIGHT_LASER;
@@ -36,26 +37,31 @@ task main()
 {
 	setup();
 	int r,g,b,c;
-	SensorType[S1] = sensorTouch;
+	//SensorType[S1] = sensorTouch;
+	//while (true)
+	//{
+	//	//P = getDistance(rightDist) - threshold;
+	//	//writeDebugStreamLine("P: %f", P);
+	//	//I += P;
+	//	//if (abs(P) < 1.5)
+	//	//	I = 0;
+	//	//D = P - lastP;
+	//	//adjust = P*kP + I*kI + D*kD;
+	//	//adjust = 0;
+	//	//motor[LMotor] = tp + adjust;
+	//	//motor[RMotor] = tp - adjust;
+	//	//delay(1);
+	////writeDebugStreamLine("DIST: %f", getDistance(rightDist));
+	//	//getColorRGB(middleFront,r,g,b,c);
+	//	//writeDebugStreamLine("COLOR: %d",c);
+	//	//delay(500);
+	//	//writeDebugStreamLine("%d",SensorValue[S1]);
+	//motor[LMotor] = forward;
+	//motor[RMotor] = forward;
+	//}
+	//turnRight(180);
+	//delay(2000);
+	//turnLeft(180);
 	while (true)
-	{
-		//P = getDistance(rightDist) - threshold;
-		//writeDebugStreamLine("P: %f", P);
-		//I += P;
-		//if (abs(P) < 1.5)
-		//	I = 0;
-		//D = P - lastP;
-		//adjust = P*kP + I*kI + D*kD;
-		//adjust = 0;
-		//motor[LMotor] = tp + adjust;
-		//motor[RMotor] = tp - adjust;
-		//delay(1);
-	//writeDebugStreamLine("DIST: %f", getDistance(rightDist));
-		//getColorRGB(middleFront,r,g,b,c);
-		//writeDebugStreamLine("COLOR: %d",c);
-		//delay(500);
-		//writeDebugStreamLine("%d",SensorValue[S1]);
-	motor[LMotor] = forward;
-	motor[RMotor] = forward;
-	}
+		writeDebugStreamLine("%d", getLightValue());
 }

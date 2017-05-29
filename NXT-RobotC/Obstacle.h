@@ -15,6 +15,8 @@ void obstacle()
 	float adjust;
 	float tp = 20;
 	dir = lDist > rDist ? 1 : -1; //bias is set here
+	dir = -1;
+	//dir = rDist > lDist ? -1 : 1;
 	bool lastStateSensor = middleFront.isLight;
 	middleFront.isLight = true;
 	if (dir == 1)
@@ -36,10 +38,17 @@ void obstacle()
 		stopMotors();
 		writeDebugStreamLine("MIDDLE FRONT: %d", getColor(middleFront));
 		goStraight(5);
+		resetEncoders();
 		motor[LMotor] = -tp;
 		motor[RMotor] = tp;
 		while (getColor(middleFront) == cBlack){}
-		while (getColor(middleFront) != cBlack){}
+		while (getColor(middleFront) != cBlack && abs(nMotorEncoder[LMotor]) < wheelbase*PI/4*cm){}
+		if (abs(nMotorEncoder[LMotor]) < wheelbase*PI/4*cm)
+		{
+			motor[LMotor] = tp;
+			motor[RMotor] = -tp;
+			while (getColor(middleFront) != cBlack){}
+		}
 	}
 	else
 	{
@@ -58,10 +67,17 @@ void obstacle()
 			delay(8);
 		}
 		goStraight(5);
+		resetEncoders();
 		motor[LMotor] = tp;
 		motor[RMotor] = -tp;
 		while (getColor(middleFront) == cBlack){}
-		while (getColor(middleFront) != cBlack){}
+		while (getColor(middleFront) != cBlack && abs(nMotorEncoder[LMotor]) < wheelbase*PI/4*cm){}
+		if (abs(nMotorEncoder[LMotor]) < wheelbase*PI/4*cm)
+		{
+			motor[LMotor] = tp;
+			motor[RMotor] = -tp;
+			while (getColor(middleFront) != cBlack){}
+		}
 	}
 	middleFront.isLight = lastStateSensor;
 }
