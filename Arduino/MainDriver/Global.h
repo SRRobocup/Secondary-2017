@@ -1,6 +1,7 @@
 #ifndef __GLOBAL_H__
 #define __GLOBAL_H__
 #include <Adafruit_TCS34725.h>
+//#include <Pololu
 #include <TCA9548A.h>
 #include <VL53L0X.h>
 #include <Wire.h>
@@ -54,7 +55,13 @@ class Motor {
     volatile int encoderValue;
     void resetEncoder();
     void setPower(int power);
+    float getCurrent();
+    int getPort();
   private:
+    static void setM0Power(int power);
+    static void setM1Power(int power);
+    static float getM0Current();
+    static float getM1Current();
     int port;
 };
 
@@ -66,7 +73,9 @@ extern LaserSensor rightLaser;
 extern ColorSensor leftColor;
 extern ColorSensor rightColor;
 
-void getArrayValues(int val[]);
+int getArrayValues(int val[]);
+float clamp(float value, float lowerBound, float upperBound);
+void initQik();
 
 void obstacle();
 void lineTrace();
