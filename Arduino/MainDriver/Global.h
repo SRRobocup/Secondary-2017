@@ -1,9 +1,6 @@
 #ifndef __GLOBAL_H__
 #define __GLOBAL_H__
-#include <Adafruit_TCS34725.h>
-//#include <Pololu
-#include <TCA9548A.h>
-#include <VL53L0X.h>
+#include <Arduino.h>
 #include <Wire.h>
 
 enum Color{
@@ -17,19 +14,21 @@ enum Color{
 
 class ColorSensor {
   public:
-    bool isLight;
     int r,g,b,c;
     int port;
     Color currentColor;
-    ColorSensor(int port, int blackThreshold, int whiteThreshold, float greenRatio, int bwThreshold, bool isLight);
+    ColorSensor(int port, int blackThreshold, int whiteThreshold, float greenRatio, int luxThreshold, int tempThreshold);
     Color getColor();
     void getColorRGB(int &r, int &g, int &b, int &c);
-    boolean begin();
+    uint16_t getLux();
+    uint16_t getColorTemperature();
+    bool begin();
   private:
     int blackThreshold;
     int whiteThreshold;
     float greenRatio;
-    int bwThreshold;
+    int luxThreshold;
+    int tempThreshold;
 };
 
 class LaserSensor {
@@ -55,13 +54,13 @@ class Motor {
     volatile int encoderValue;
     void resetEncoder();
     void setPower(int power);
-    float getCurrent();
+    int getCurrent();
     int getPort();
   private:
     static void setM0Power(int power);
     static void setM1Power(int power);
-    static float getM0Current();
-    static float getM1Current();
+    static int getM0Current();
+    static int getM1Current();
     int port;
 };
 
@@ -73,9 +72,13 @@ extern LaserSensor rightLaser;
 extern ColorSensor leftColor;
 extern ColorSensor rightColor;
 
-int getArrayValues(int val[]);
+int getArrayValues(int val[], int n);
 float clamp(float value, float lowerBound, float upperBound);
 void initQik();
+void goStraight(float distance, int power);
+void goBackward(float distance, int power);
+void turnLeft(float degrees, int power);
+void turnRight(float degrees, int power);
 
 void obstacle();
 void lineTrace();

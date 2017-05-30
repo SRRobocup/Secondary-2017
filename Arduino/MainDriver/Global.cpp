@@ -1,27 +1,36 @@
 #include "Global.h"
+#include <SoftwareSerial.h>
+#include <Adafruit_TCS34725.h>
+#include <PololuQik.h>
+#include <TCA9548A.h>
+#include <VL53L0X.h>
+#include <Wire.h>
+
+#define MSLSA
 
 Adafruit_TCS34725 colorSensorI2C = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 TCA9548A mux = TCA9548A();
 VL53L0X longRangeI2C = VL53L0X();
+PololuQik2s12v10 motorController = PololuQik2s12v10(5,6,7);
 
 Motor LMotor = Motor(0);
 Motor RMotor = Motor(1);
 LaserSensor leftLaser = LaserSensor(5);
 PingSensor frontPing = PingSensor(4);
 LaserSensor rightLaser = LaserSensor(7);
-ColorSensor leftColor = ColorSensor(1, 0, 0, 0, 0, false);
-ColorSensor rightColor = ColorSensor(2, 0, 0, 0, 0, false);
+ColorSensor leftColor = ColorSensor(1, 0, 0, 0, 0, 0);
+ColorSensor rightColor = ColorSensor(2, 0, 0, 0, 0, 0);
 
 /**
  * Constructor for ColorSebsor
  */
-ColorSensor::ColorSensor(int p, int bThresh, int wThresh, float rat, int bwThresh, bool l)
+ColorSensor::ColorSensor(int p, int bThresh, int wThresh, float rat, int lux, int temp)
   :port(port)
   ,blackThreshold(bThresh)
   ,whiteThreshold(wThresh)
   ,greenRatio(rat)
-  ,bwThreshold(bwThresh)
-  ,isLight(l)
+  ,luxThreshold(lux)
+  ,tempThreshold(temp)
 {
   r = 0;
   g = 0;
@@ -33,7 +42,7 @@ ColorSensor::ColorSensor(int p, int bThresh, int wThresh, float rat, int bwThres
 /**
  * Starts the color sensor's polling
  */
-boolean ColorSensor::begin() {
+bool ColorSensor::begin() {
   mux.select(port);
   colorSensorI2C.begin();
 }
@@ -50,6 +59,16 @@ void ColorSensor::getColorRGB(int &r, int &g, int &b, int &c) {
   this->c = c;
 }
 
+uint16_t ColorSensor::getLux(){
+  mux.select(port);
+  return colorSensorI2C.calculateLux(r,g,b);
+}
+
+uint16_t ColorSensor::getColorTemperature() {
+  mux.select(port);
+  return colorSensorI2C.calculateColorTemperature(r,g,b);
+}
+
 /**
  * Runs the rgb value through the threshold to determine color
  */
@@ -61,10 +80,6 @@ Color ColorSensor::getColor() {
   int red,green,blue,clear;
   do {
     getColorRGB(red,green,blue,clear);
-    if (isLight) {
-      curr = (Color) (clear < bwThreshold);
-      break;
-    }
     if (green < blackThreshold) {
       curr = cBlack;
       break;
@@ -166,7 +181,7 @@ void Motor::resetEncoder() {
 /**
  * Gets the current running to the motors
  */
-float Motor::getCurrent() {
+int Motor::getCurrent() {
   if (port == 0)
     return Motor::getM0Current();
   else
@@ -180,36 +195,58 @@ int Motor::getPort() {
 /**
  * Gets the values of the light array
  */
-int getArrayValues(int val[]) {
+int getArrayValues(int val[], int n) {
+  int startValue = 0;
+  int error = 0;
+#ifdef MSLSA
   Wire.beginTransmission(0x14 >> 1);
   Wire.write(0x42);
-  int error = Wire.endTransmission();
+  error = Wire.endTransmission();
   if (error != 0)
     return error;
   Wire.requestFrom(0x14 >> 1,8);
-  for (int i = 0; Wire.available(); i++)
+  memset(0,val,sizeof(int)*n);
+  if (n == 6) {
+    Wire.read();
+  }
+  for (int i = startValue; Wire.available() && i < n; i++)
     val[i] = Wire.read();
+  while (Wire.available())
+    Wire.read();
+#else
+  
+#endif
   return error;
 }
 
 void Motor::setM0Power(int power) {
-  
+  if (power == 0)
+    motorController.setM0Brake(127);
+  else {
+    motorController.setM0Brake(0);
+    motorController.setM0Speed(power);
+  }
 }
 
 void Motor::setM1Power(int power) {
-  
+  if (power == 0)
+    motorController.setM1Brake(127);
+  else {
+    motorController.setM1Brake(0);
+    motorController.setM1Speed(power);
+  }
 }
 
-float Motor::getM0Current() {
-  return 0;
+int Motor::getM0Current() {
+  return motorController.getM0Current();
 }
 
-float Motor::getM1Current() {
-  return 0;
+int Motor::getM1Current() {
+  return motorController.getM1Current();
 }
 
 void initQik() {
-  
+  motorController.init(38400);
 }
 
 /**
