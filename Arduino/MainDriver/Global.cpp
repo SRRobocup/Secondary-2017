@@ -6,8 +6,6 @@
 #include <VL53L0X.h>
 #include <Wire.h>
 
-#define MSLSA
-
 Adafruit_TCS34725 colorSensorI2C = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 TCA9548A mux = TCA9548A();
 VL53L0X longRangeI2C = VL53L0X();
@@ -20,6 +18,15 @@ PingSensor frontPing = PingSensor(4);
 LaserSensor rightLaser = LaserSensor(7);
 ColorSensor leftColor = ColorSensor(1, 0, 0, 0, 0, 0);
 ColorSensor rightColor = ColorSensor(2, 0, 0, 0, 0, 0);
+
+float wheelbase = 10;
+const float encPerCM = 900/(PI * 4);
+#ifdef MSLSA
+const int arrayThreshold = 0;
+#else
+const int arrayThreshold = 700;
+#endif
+
 
 /**
  * Constructor for ColorSebsor
@@ -195,9 +202,11 @@ int Motor::getPort() {
 /**
  * Gets the values of the light array
  */
-int getArrayValues(int val[], int n) {
+int getArrayValues(int val[]) {
   int startValue = 0;
   int error = 0;
+  if (sizeof(val) != sizeof(int) * ARRAY_SIZE)
+    return 0;
 #ifdef MSLSA
   Wire.beginTransmission(0x14 >> 1);
   Wire.write(0x42);
@@ -205,11 +214,8 @@ int getArrayValues(int val[], int n) {
   if (error != 0)
     return error;
   Wire.requestFrom(0x14 >> 1,8);
-  memset(0,val,sizeof(int)*n);
-  if (n == 6) {
-    Wire.read();
-  }
-  for (int i = startValue; Wire.available() && i < n; i++)
+  memset(0,val,sizeof(int)*ARRAY_SIZE);
+  for (int i = startValue; Wire.available(); i++)
     val[i] = Wire.read();
   while (Wire.available())
     Wire.read();
@@ -249,6 +255,10 @@ void initQik() {
   motorController.init(38400);
 }
 
+void stopMotors() {
+  LMotor.setPower(0);
+  RMotor.setPower(0);
+}
 /**
  * Ensures that the given value is within the lower and upper bound
  */
@@ -258,5 +268,60 @@ float clamp(float value, float lowerBound, float upperBound) {
   if (value > upperBound)
     return upperBound;
   return value;
+}
+
+void goStraight(float distance, int power) {
+  float ticks = distance * encPerCM;
+  LMotor.resetEncoder();
+  LMotor.setPower(power);
+  RMotor.setPower(power);
+  while (LMotor.encoderValue < ticks){}
+  stopMotors();
+}
+
+void goBack(float distance, int power) {
+  float ticks = distance * encPerCM;
+  LMotor.resetEncoder();
+  LMotor.setPower(-power);
+  RMotor.setPower(-power);
+  while (LMotor.encoderValue < ticks){}
+  stopMotors();
+}
+
+void turnRight(float degrees, int power) {
+  float ticks = wheelbase * PI * (degrees/360) * encPerCM;
+  LMotor.resetEncoder();
+  LMotor.setPower(power);
+  RMotor.setPower(-power);
+  while (LMotor.encoderValue < ticks){}
+  stopMotors();
+}
+
+void turnLeft(float degrees, int power) {
+  float ticks = wheelbase * PI * (degrees/360) * encPerCM;
+  LMotor.resetEncoder();
+  LMotor.setPower(-power);
+  RMotor.setPower(power);
+  while (LMotor.encoderValue < ticks){}
+  stopMotors();
+}
+
+bool seeLine() {
+  int val[ARRAY_SIZE];
+  getArrayValues(val);
+  for (int i = 0; i < ARRAY_SIZE; i++)
+    if (val[i] < arrayThreshold)
+      return true;
+  return false;
+}
+
+void turnToMiddleArray() {
+  int P, I, D;
+  float kP = 0;
+  float kI = 0;
+  float kD = 0;
+  do {
+    
+  } while (P > 20);
 }
 

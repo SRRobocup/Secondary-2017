@@ -27,6 +27,8 @@ void loop() {
   lineTrace();
   if (frontPing.getDistance() < 7)
     obstacle();
-  if (leftColor.getColor() == cSilver && rightColor.getColor() == cSilver) //silver
+  if (leftColor.getColor() == cSilver && rightColor.getColor() == cSilver) { //silver
+    //double check
     evac();
+  }
 }

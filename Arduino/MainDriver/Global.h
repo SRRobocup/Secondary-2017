@@ -3,6 +3,14 @@
 #include <Arduino.h>
 #include <Wire.h>
 
+#define MSLSA
+
+#ifdef MSLSA
+#define ARRAY_SIZE 8
+#else
+#define ARRAY_SIZE 6
+#endif
+
 enum Color{
   cWhite = 0,
   cBlack = 1,
@@ -71,14 +79,20 @@ extern PingSensor frontPing;
 extern LaserSensor rightLaser;
 extern ColorSensor leftColor;
 extern ColorSensor rightColor;
+extern float wheelbase;
+const extern float encPerCM;
+const extern int arrayThreshold;
 
-int getArrayValues(int val[], int n);
+int getArrayValues(int val[]);
 float clamp(float value, float lowerBound, float upperBound);
 void initQik();
+void stopMotors();
 void goStraight(float distance, int power);
 void goBackward(float distance, int power);
 void turnLeft(float degrees, int power);
 void turnRight(float degrees, int power);
+bool seeLine();
+void turnToMiddleArray();
 
 void obstacle();
 void lineTrace();
