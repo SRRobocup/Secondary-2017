@@ -12,21 +12,15 @@ uint8_t getArrayState() {
 }
 
 void arrayPID() {
-  int val[8];
-  getArrayValues(val);
-  const float kP;
-  const float kI;
-  const float kD;
-  float P = 0, I = 0, D = 0;
-  #ifdef MSLSA
-  kP = 1;
-  kI = 0;
-  kD = 0;
-  #else
-  kP = 0.1;
-  kI = 0;
-  kD = 0;
-  #endif
+  int P, I, D;
+  float kP = 0;
+  float kI = 0;
+  float kD = 0;
+  float adjust = 0;
+  P = getWeightedArrValues();
+  adjust = P * kP;
+  LMotor.setPower(power - adjust);
+  RMotor.setPower(power + adjust);
 }
 
 void lineTrace() {
@@ -38,28 +32,52 @@ void lineTrace() {
     goStraight(forwardDistance, power);
     turnRight(180, power);
   } else if (leftColor.currentColor == cGreen) {
-    goStraight(forwardDistance, power);
-    turnLeft(90,power);
+    LMotor.setPower(power);
+    LMotor.setPower(power);
+    while (getColor(leftColor) != cBlack && leftColor.currentColor != cWhite){}
+    if (leftColor.currentColor == cWhite)
+      return;
+    LMotor.setPower(-power);
+    RMotor.setPower(power);
+    while (!seeLine()){}
+    stopMotors();
+    turnToMiddleArray();
   } else if (rightColor.currentColor == cGreen) {
-    goStraight(forwardDistance, power);
-    turnRight(90,power);
+    LMotor.setPower(power);
+    LMotor.setPower(power);
+    while (getColor(rightColor) != cBlack && rightColor.currentColor != cWhite){}
+    if (rightColor.currentColor == cWhite)
+      return;
+    LMotor.setPower(power);
+    RMotor.setPower(-power);
+    while (!seeLine()){}
+    stopMotors();
+    turnToMiddleArray();
   }
   switch (arrayState) {
     case B00011111:
-    case B001111:
+//    case B001111:
       goStraight(3, power);
       if (seeLine())
         return;
       goStraight(forwardDistance - 3, power);
-      turnRight(90, power);
+      LMotor.setPower(power);
+      RMotor.setPower(-power);
+      while (!seeLine()){}
+      stopMotors();
+      turnToMiddleArray();
       break;
     case B11111000:
-    case B111100:
+//    case B111100:
       goStraight(3, power);
       if (seeLine())
         return;
       goStraight(forwardDistance - 3, power);
-      turnLeft(90, power);
+      LMotor.setPower(-power);
+      RMotor.setPower(power);
+      while (!seeLine()){}
+      stopMotors();
+      turnToMiddleArray();
       break;
 //    case B11111111:
 //    case B111111:

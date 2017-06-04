@@ -4,7 +4,8 @@
 #include <PololuQik.h>
 #include <TCA9548A.h>
 #include <VL53L0X.h>
-#include <Wire.h>
+//#include <Wire.h>
+#include <Servo.h>
 
 Adafruit_TCS34725 colorSensorI2C = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 TCA9548A mux = TCA9548A();
@@ -220,43 +221,9 @@ int getArrayValues(int val[]) {
   while (Wire.available())
     Wire.read();
 #else
-  int pins[] = {3,4,5,6,7,8,9,10};
-  for(int i = 0; i < 8; i++) {
-      val[i] = 2000;
-      digitalWrite(pins[i], HIGH);   // make sensor line an output
-      pinMode(pins[i], OUTPUT);      // drive sensor line high
-  }
-
-  delayMicroseconds(10);              // charge lines for 10 us
-
-  for(int i = 0; i < 8; i++) {
-      pinMode(pins[i], INPUT);       // make sensor line an input
-      digitalWrite(pins[i], LOW);        // important: disable internal pull-up!
-  }
-
-  unsigned long startTime = micros();
-  while (micros() - startTime < _maxValue) {
-      unsigned int time = micros() - startTime;
-      for (i = 0; i < _numSensors; i++) {
-          if (digitalRead(pins[i]) == LOW && time < val[i])
-              val[i] = time;
-      }
-  }
+  
 #endif
   return error;
-}
-
-int getWeightedArrValue() {
-  int val[ARRAY_SIZE];
-  getArrayValues(val);
-  return val[0] * 4
-    + val[1] * 3
-    + val[2] * 2
-    + val[3] * 1
-    + val[4] * 1
-    + val[5] * 2
-    + val[6] * 3
-    + val[7] * 4;
 }
 
 void Motor::setM0Power(int power) {
@@ -354,13 +321,8 @@ void turnToMiddleArray() {
   float kP = 0;
   float kI = 0;
   float kD = 0;
-  float adjust = 0;
   do {
-    P = getWeightedArrValues();
-    adjust = P * kP;
-    LMotor.setPower(-adjust);
-    RMotor.setPower(adjust);
-  } while (abs(P) > 20);
-  stopMotors();
+    
+  } while (P > 20);
 }
 

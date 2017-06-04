@@ -1,14 +1,13 @@
 #ifndef __GLOBAL_H__
 #define __GLOBAL_H__
 #include <Arduino.h>
-#include <Wire.h>
 
 #define MSLSA
 
 #ifdef MSLSA
 #define ARRAY_SIZE 8
 #else
-#define ARRAY_SIZE 8
+#define ARRAY_SIZE 6
 #endif
 
 enum Color{
@@ -84,7 +83,6 @@ const extern float encPerCM;
 const extern int arrayThreshold;
 
 int getArrayValues(int val[]);
-int getWeightedArrValue();
 float clamp(float value, float lowerBound, float upperBound);
 void initQik();
 void stopMotors();
