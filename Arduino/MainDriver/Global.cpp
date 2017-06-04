@@ -17,8 +17,8 @@ Motor RMotor = Motor(1);
 LaserSensor leftLaser = LaserSensor(5);
 PingSensor frontPing = PingSensor(4);
 LaserSensor rightLaser = LaserSensor(7);
-ColorSensor leftColor = ColorSensor(1, 0, 0, 0, 0, 0);
-ColorSensor rightColor = ColorSensor(2, 0, 0, 0, 0, 0);
+ColorSensor leftColor = ColorSensor(1, 0, 0, 0, 0, 0, 0);
+ColorSensor rightColor = ColorSensor(2, 0, 0, 0, 0, 0, 0);
 
 float wheelbase = 10;
 const float encPerCM = 900 / (PI * 4);
@@ -32,12 +32,13 @@ const int arrayThreshold = 700;
 /**
    Constructor for ColorSebsor
 */
-ColorSensor::ColorSensor(int p, int bThresh, int wThresh, float rat, int lux, int temp)
+ColorSensor::ColorSensor(int p, int bThresh, int wThresh, float rat, int lMin, int lMax, int temp)
   : port(port)
   , blackThreshold(bThresh)
   , whiteThreshold(wThresh)
   , greenRatio(rat)
-  , luxThreshold(lux)
+  , luxMin(lMin)
+  , luxMax(lMax)
   , tempThreshold(temp)
 {
   r = 0;
@@ -69,11 +70,15 @@ void ColorSensor::getColorRGB(int &r, int &g, int &b, int &c) {
 
 uint16_t ColorSensor::getLux() {
   mux.select(port);
+  int del;
+  getColorRGB(del,del,del,del);
   return colorSensorI2C.calculateLux(r, g, b);
 }
 
 uint16_t ColorSensor::getColorTemperature() {
   mux.select(port);
+  int del;
+  getColorRGB(del,del,del,del);
   return colorSensorI2C.calculateColorTemperature(r, g, b);
 }
 
@@ -108,7 +113,13 @@ Color ColorSensor::getColor() {
 }
 
 Color ColorSensor::getSilver() {
-  return cBlack;
+  uint16_t temp = getColorTemperature();
+  uint16_t lux = getLux();
+  if (lux < luxMin)
+    return cBlack;
+  if (lux > luxMax || temp > tempThreshold)
+    return cWhite;
+  return cSilver;
 }
 
 /**

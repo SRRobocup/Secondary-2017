@@ -31,11 +31,12 @@ void loop() {
   if (millis() - lastTime >= 1000) {
     ledState = !ledState;
     digitalWrite(LED, ledState ? HIGH : LOW);
+    lastTime = millis();
   }
   lineTrace();
   if (frontPing.getDistance() < 7)
     obstacle();
-  if (leftColor.getColor() == cSilver && rightColor.getColor() == cSilver) { //silver
+  if (leftColor.getSilver() == cSilver && rightColor.getSilver() == cSilver) { //silver
     //double check
     evac();
   }

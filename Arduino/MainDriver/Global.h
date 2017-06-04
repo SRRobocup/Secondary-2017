@@ -26,7 +26,7 @@ class ColorSensor {
     int r,g,b,c;
     int port;
     Color currentColor;
-    ColorSensor(int port, int blackThreshold, int whiteThreshold, float greenRatio, int luxThreshold, int tempThreshold);
+    ColorSensor(int port, int blackThreshold, int whiteThreshold, float greenRatio, int luxMin, int luxMax, int tempThreshold);
     Color getColor();
     Color getSilver();
     void getColorRGB(int &r, int &g, int &b, int &c);
@@ -37,7 +37,8 @@ class ColorSensor {
     int blackThreshold;
     int whiteThreshold;
     float greenRatio;
-    int luxThreshold;
+    int luxMax;
+    int luxMin;
     int tempThreshold;
 };
 
