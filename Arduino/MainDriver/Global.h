@@ -2,6 +2,7 @@
 #define __GLOBAL_H__
 #include <Arduino.h>
 #include <Wire.h>
+#include "Pinmap.h"
 
 #define MSLSA
 
@@ -27,6 +28,7 @@ class ColorSensor {
     Color currentColor;
     ColorSensor(int port, int blackThreshold, int whiteThreshold, float greenRatio, int luxThreshold, int tempThreshold);
     Color getColor();
+    Color getSilver();
     void getColorRGB(int &r, int &g, int &b, int &c);
     uint16_t getLux();
     uint16_t getColorTemperature();

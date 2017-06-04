@@ -5,6 +5,7 @@
 #include <TCA9548A.h>
 #include <VL53L0X.h>
 #include <Wire.h>
+#include "Pinmap.h"
 
 Adafruit_TCS34725 colorSensorI2C = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 TCA9548A mux = TCA9548A();
@@ -104,6 +105,10 @@ Color ColorSensor::getColor() {
   } while (false);
   currentColor = curr;
   return curr;
+}
+
+Color ColorSensor::getSilver() {
+  return cBlack;
 }
 
 /**
@@ -356,7 +361,7 @@ void turnToMiddleArray() {
   float kD = 0;
   float adjust = 0;
   do {
-    P = getWeightedArrValues();
+    P = getWeightedArrValue();
     adjust = P * kP;
     LMotor.setPower(-adjust);
     RMotor.setPower(adjust);
@@ -367,10 +372,11 @@ void turnToMiddleArray() {
 int buttonPressed() {
   int thresh[5] = {600, 650, 700,  800, 900 };
   int k;
+  int input = analogRead(ADKEYBOARD);
   for (k = 0; k < 5; k++)
     if (input < thresh[k])
       return k;
-  if (k >= NUM_KEYS)k = -1;  // No valid key pressed
+  if (k >= 5)k = -1;  // No valid key pressed
   return k;
 }
 

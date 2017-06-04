@@ -17,7 +17,7 @@ void arrayPID() {
   float kI = 0;
   float kD = 0;
   float adjust = 0;
-  P = getWeightedArrValues();
+  P = getWeightedArrValue();
   adjust = P * kP;
   LMotor.setPower(power - adjust);
   RMotor.setPower(power + adjust);
@@ -34,7 +34,7 @@ void lineTrace() {
   } else if (leftColor.currentColor == cGreen) {
     LMotor.setPower(power);
     LMotor.setPower(power);
-    while (getColor(leftColor) != cBlack && leftColor.currentColor != cWhite){}
+    while (leftColor.getColor() != cBlack && leftColor.currentColor != cWhite){}
     if (leftColor.currentColor == cWhite)
       return;
     LMotor.setPower(-power);
@@ -45,7 +45,7 @@ void lineTrace() {
   } else if (rightColor.currentColor == cGreen) {
     LMotor.setPower(power);
     LMotor.setPower(power);
-    while (getColor(rightColor) != cBlack && rightColor.currentColor != cWhite){}
+    while (rightColor.getColor() != cBlack && rightColor.currentColor != cWhite){}
     if (rightColor.currentColor == cWhite)
       return;
     LMotor.setPower(power);
