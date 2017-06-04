@@ -94,6 +94,7 @@ void turnLeft(float degrees, int power);
 void turnRight(float degrees, int power);
 bool seeLine();
 void turnToMiddleArray();
+int buttonPressed();
 
 void obstacle();
 void lineTrace();

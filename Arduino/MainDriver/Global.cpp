@@ -9,7 +9,7 @@
 Adafruit_TCS34725 colorSensorI2C = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 TCA9548A mux = TCA9548A();
 VL53L0X longRangeI2C = VL53L0X();
-PololuQik2s12v10 motorController = PololuQik2s12v10(5,6,7);
+PololuQik2s12v10 motorController = PololuQik2s12v10(5, 6, 7);
 
 Motor LMotor = Motor(0);
 Motor RMotor = Motor(1);
@@ -20,7 +20,7 @@ ColorSensor leftColor = ColorSensor(1, 0, 0, 0, 0, 0);
 ColorSensor rightColor = ColorSensor(2, 0, 0, 0, 0, 0);
 
 float wheelbase = 10;
-const float encPerCM = 900/(PI * 4);
+const float encPerCM = 900 / (PI * 4);
 #ifdef MSLSA
 const int arrayThreshold = 0;
 #else
@@ -29,15 +29,15 @@ const int arrayThreshold = 700;
 
 
 /**
- * Constructor for ColorSebsor
- */
+   Constructor for ColorSebsor
+*/
 ColorSensor::ColorSensor(int p, int bThresh, int wThresh, float rat, int lux, int temp)
-  :port(port)
-  ,blackThreshold(bThresh)
-  ,whiteThreshold(wThresh)
-  ,greenRatio(rat)
-  ,luxThreshold(lux)
-  ,tempThreshold(temp)
+  : port(port)
+  , blackThreshold(bThresh)
+  , whiteThreshold(wThresh)
+  , greenRatio(rat)
+  , luxThreshold(lux)
+  , tempThreshold(temp)
 {
   r = 0;
   g = 0;
@@ -47,46 +47,46 @@ ColorSensor::ColorSensor(int p, int bThresh, int wThresh, float rat, int lux, in
 }
 
 /**
- * Starts the color sensor's polling
- */
+   Starts the color sensor's polling
+*/
 bool ColorSensor::begin() {
   mux.select(port);
   colorSensorI2C.begin();
 }
 
 /**
- * Acts as wrapper for the getColorEx of the TCS34725 Sensor
- */
+   Acts as wrapper for the getColorEx of the TCS34725 Sensor
+*/
 void ColorSensor::getColorRGB(int &r, int &g, int &b, int &c) {
   mux.select(port);
-  colorSensorI2C.getRawDataEx(&r,&g,&b,&c);
+  colorSensorI2C.getRawDataEx(&r, &g, &b, &c);
   this->r = r;
   this->g = g;
   this->b = b;
   this->c = c;
 }
 
-uint16_t ColorSensor::getLux(){
+uint16_t ColorSensor::getLux() {
   mux.select(port);
-  return colorSensorI2C.calculateLux(r,g,b);
+  return colorSensorI2C.calculateLux(r, g, b);
 }
 
 uint16_t ColorSensor::getColorTemperature() {
   mux.select(port);
-  return colorSensorI2C.calculateColorTemperature(r,g,b);
+  return colorSensorI2C.calculateColorTemperature(r, g, b);
 }
 
 /**
- * Runs the rgb value through the threshold to determine color
- */
+   Runs the rgb value through the threshold to determine color
+*/
 Color ColorSensor::getColor() {
   if (port < 0 || port > 7)
-      return cInvalid;
+    return cInvalid;
   Color curr;
   mux.select(port);
-  int red,green,blue,clear;
+  int red, green, blue, clear;
   do {
-    getColorRGB(red,green,blue,clear);
+    getColorRGB(red, green, blue, clear);
     if (green < blackThreshold) {
       curr = cBlack;
       break;
@@ -95,7 +95,7 @@ Color ColorSensor::getColor() {
       curr = cWhite;
       break;
     }
-    if ((float)green/blue > greenRatio) {
+    if ((float)green / blue > greenRatio) {
       curr = cGreen;
       break;
     }
@@ -107,16 +107,16 @@ Color ColorSensor::getColor() {
 }
 
 /**
- * Initializes laser sensor with port p
- */
+   Initializes laser sensor with port p
+*/
 LaserSensor::LaserSensor(int p)
-  :port(p)
+  : port(p)
 {
 }
 
 /**
- * Starts continuous polling of laser sensor
- */
+   Starts continuous polling of laser sensor
+*/
 void LaserSensor::begin() {
   mux.select(port);
   longRangeI2C.init();
@@ -126,24 +126,24 @@ void LaserSensor::begin() {
 }
 
 /**
- * Reads the laser for value
- */
+   Reads the laser for value
+*/
 float LaserSensor::getDistance() {
   mux.select(port);
-  return longRangeI2C.readRangeContinuousMillimeters()/(float) 10;
+  return longRangeI2C.readRangeContinuousMillimeters() / (float) 10;
 }
 
 /**
- * Initializes the ping sensor with signal pin p
- */
+   Initializes the ping sensor with signal pin p
+*/
 PingSensor::PingSensor(int p)
-  :pin(p)
+  : pin(p)
 {
 }
 
 /**
- * Gets distance of Ping sensor using digital pin
- */
+   Gets distance of Ping sensor using digital pin
+*/
 float PingSensor::getDistance()
 {
   long duration;
@@ -160,17 +160,17 @@ float PingSensor::getDistance()
 }
 
 /**
- * Intializes the motor with port p
- */
+   Intializes the motor with port p
+*/
 Motor::Motor(int p)
-  :port(p)
-  ,encoderValue(0)
+  : port(p)
+  , encoderValue(0)
 {
 }
 
 /**
- * Sets power of motor
- */
+   Sets power of motor
+*/
 void Motor::setPower(int power) {
   if (port == 0)
     Motor::setM0Power(power);
@@ -179,15 +179,15 @@ void Motor::setPower(int power) {
 }
 
 /**
- * Sets encoder count back to 0
- */
+   Sets encoder count back to 0
+*/
 void Motor::resetEncoder() {
   encoderValue = 0;
 }
 
 /**
- * Gets the current running to the motors
- */
+   Gets the current running to the motors
+*/
 int Motor::getCurrent() {
   if (port == 0)
     return Motor::getM0Current();
@@ -200,8 +200,8 @@ int Motor::getPort() {
 }
 
 /**
- * Gets the values of the light array
- */
+   Gets the values of the light array
+*/
 int getArrayValues(int val[]) {
   int startValue = 0;
   int error = 0;
@@ -213,34 +213,34 @@ int getArrayValues(int val[]) {
   error = Wire.endTransmission();
   if (error != 0)
     return error;
-  Wire.requestFrom(0x14 >> 1,8);
-  memset(0,val,sizeof(int)*ARRAY_SIZE);
+  Wire.requestFrom(0x14 >> 1, 8);
+  memset(0, val, sizeof(int)*ARRAY_SIZE);
   for (int i = startValue; Wire.available(); i++)
     val[i] = Wire.read();
   while (Wire.available())
     Wire.read();
 #else
-  int pins[] = {3,4,5,6,7,8,9,10};
-  for(int i = 0; i < 8; i++) {
-      val[i] = 2000;
-      digitalWrite(pins[i], HIGH);   // make sensor line an output
-      pinMode(pins[i], OUTPUT);      // drive sensor line high
+  int pins[] = {3, 4, 5, 6, 7, 8, 9, 10};
+  for (int i = 0; i < 8; i++) {
+    val[i] = 2000;
+    digitalWrite(pins[i], HIGH);   // make sensor line an output
+    pinMode(pins[i], OUTPUT);      // drive sensor line high
   }
 
   delayMicroseconds(10);              // charge lines for 10 us
 
-  for(int i = 0; i < 8; i++) {
-      pinMode(pins[i], INPUT);       // make sensor line an input
-      digitalWrite(pins[i], LOW);        // important: disable internal pull-up!
+  for (int i = 0; i < 8; i++) {
+    pinMode(pins[i], INPUT);       // make sensor line an input
+    digitalWrite(pins[i], LOW);        // important: disable internal pull-up!
   }
 
   unsigned long startTime = micros();
   while (micros() - startTime < _maxValue) {
-      unsigned int time = micros() - startTime;
-      for (i = 0; i < _numSensors; i++) {
-          if (digitalRead(pins[i]) == LOW && time < val[i])
-              val[i] = time;
-      }
+    unsigned int time = micros() - startTime;
+    for (i = 0; i < _numSensors; i++) {
+      if (digitalRead(pins[i]) == LOW && time < val[i])
+        val[i] = time;
+    }
   }
 #endif
   return error;
@@ -250,13 +250,13 @@ int getWeightedArrValue() {
   int val[ARRAY_SIZE];
   getArrayValues(val);
   return val[0] * 4
-    + val[1] * 3
-    + val[2] * 2
-    + val[3] * 1
-    + val[4] * 1
-    + val[5] * 2
-    + val[6] * 3
-    + val[7] * 4;
+         + val[1] * 3
+         + val[2] * 2
+         + val[3] * 1
+         + val[4] * 1
+         + val[5] * 2
+         + val[6] * 3
+         + val[7] * 4;
 }
 
 void Motor::setM0Power(int power) {
@@ -294,8 +294,8 @@ void stopMotors() {
   RMotor.setPower(0);
 }
 /**
- * Ensures that the given value is within the lower and upper bound
- */
+   Ensures that the given value is within the lower and upper bound
+*/
 float clamp(float value, float lowerBound, float upperBound) {
   if (value < lowerBound)
     return lowerBound;
@@ -309,7 +309,7 @@ void goStraight(float distance, int power) {
   LMotor.resetEncoder();
   LMotor.setPower(power);
   RMotor.setPower(power);
-  while (LMotor.encoderValue < ticks){}
+  while (LMotor.encoderValue < ticks) {}
   stopMotors();
 }
 
@@ -318,25 +318,25 @@ void goBack(float distance, int power) {
   LMotor.resetEncoder();
   LMotor.setPower(-power);
   RMotor.setPower(-power);
-  while (LMotor.encoderValue < ticks){}
+  while (LMotor.encoderValue < ticks) {}
   stopMotors();
 }
 
 void turnRight(float degrees, int power) {
-  float ticks = wheelbase * PI * (degrees/360) * encPerCM;
+  float ticks = wheelbase * PI * (degrees / 360) * encPerCM;
   LMotor.resetEncoder();
   LMotor.setPower(power);
   RMotor.setPower(-power);
-  while (LMotor.encoderValue < ticks){}
+  while (LMotor.encoderValue < ticks) {}
   stopMotors();
 }
 
 void turnLeft(float degrees, int power) {
-  float ticks = wheelbase * PI * (degrees/360) * encPerCM;
+  float ticks = wheelbase * PI * (degrees / 360) * encPerCM;
   LMotor.resetEncoder();
   LMotor.setPower(-power);
   RMotor.setPower(power);
-  while (LMotor.encoderValue < ticks){}
+  while (LMotor.encoderValue < ticks) {}
   stopMotors();
 }
 
@@ -362,5 +362,15 @@ void turnToMiddleArray() {
     RMotor.setPower(adjust);
   } while (abs(P) > 20);
   stopMotors();
+}
+
+int buttonPressed() {
+  int thresh[5] = {600, 650, 700,  800, 900 };
+  int k;
+  for (k = 0; k < 5; k++)
+    if (input < thresh[k])
+      return k;
+  if (k >= NUM_KEYS)k = -1;  // No valid key pressed
+  return k;
 }
 
