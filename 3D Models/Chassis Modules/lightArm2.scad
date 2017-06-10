@@ -31,21 +31,23 @@ function determineBetween(size,between) = (size - between)/2;
 
 //*********************************************//
 //IMPORTANT//
-sensorHoleSize = 2.3 + 0.1;
-$fn = 4;
+sensorHoleSize = 2.3;
+$fn = 25;
 //IF PRINTING $fn = 25;//
 //IF ETHAN, sensorHoleSize = 2.3 + 0.1;//
 //ELSE, sensorHoleSize = 2.3;//
 //*********************************************//
-
-rotate([0,90,0]){
+module lightArm2(rc)
+{
+$fn=rc;
+//rotate([0,90,0]){
 difference()
 { 
 union()
 {
-    translate([0,0,-2]) 
+    translate([0,0,-2-2]) 
     {
-        cube([5,7.5,14],center = true);
+        cube([5,7.5,10],center = true);
     }
     translate([0,0,-10.5]) 
     {
@@ -66,4 +68,6 @@ translate([0,holePlace(sensorDistanceBetween,sensorHoleSize),0]) {
             cylinder(30,d = sensorHoleSize,center = true);
         }
     }
+//}
 }
+lightArm2(20);

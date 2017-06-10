@@ -58,3 +58,65 @@ There was no room for the light array in the spot that it was intended to go.
 -Made several small adjustments to some models, will give to Ethan for printing.
 ************************************************************************************************************
 ************************************************************************************************************
+3/12/2017 - Update 1.1
+
+-Several parts were re-printed so that the bot would fit together nicely.
+-The light sensor mounts were re-printed so that the front light sensor was farther away from the others, and higher off the ground.
+************************************************************************************************************
+************************************************************************************************************
+3/12/2017 - Update 1.2
+
+-The walls were reprinted so that a second version of the bot could be made. These walls were made so that the robot could be more compact. In this verison of the walls the width of the robot was decreased by 3 cm. This was major improvement. 
+-The side laser sensor mounts were printed, but the sensor did not fit. They will be remodeled and printed next week.
+************************************************************************************************************
+************************************************************************************************************
+3/19/2017 - Update 1.3
+
+-The sensor mount were printed out today and attached to the robot.
+-Color sensors are too far infront of the treads and need to be moved back. A new sensor mount was designed to meet this requirement.
+************************************************************************************************************
+************************************************************************************************************
+3/26/2017 - Update 1.4
+
+-The light sensor mount was printed today and it works better.
+-There is too much space on the robot in length and the walls will be reprinted to recude this.
+************************************************************************************************************
+************************************************************************************************************
+4/2/2017 - Update 1.5
+
+-The final bot is being printed. It will be assembled next week.
+-The walls are to big to fit on the printer bed and each wall was split into two different prints that will be screwed together.
+-While the walls are printing some nuts are being developed.
+************************************************************************************************************
+************************************************************************************************************
+4/9/2017 - Update 1.6
+
+-The final bot was asemmbled today. All the sensors and the protoboard were transferered from the old to new bot. 
+-The nuts were also printed today. They will help hold loose screws in place.
+************************************************************************************************************
+************************************************************************************************************
+4/16/2017 - Update 1.7
+
+-The side laser senors will be moved so a mount was printed for them.
+-A mount for the front laser sensor was designed.
+-To make the robot even more compact, a new sensor mount is being designed that will make the robot even more compact. 
+************************************************************************************************************
+************************************************************************************************************
+4/16/2017 - Update 1.7
+-The mount was printed and was sanded in order to also securly mount the light array.
+-The evac mechanism is starting to be designed. The dumper which will hold all the balls was designed. 
+************************************************************************************************************
+************************************************************************************************************
+4/23/2017 - Update 1.8
+
+-The dumper was printed today and was attached to the robot. The mount that attacheds the servo to the mount was also printed.
+-The claw is starting to be designed. Watching other videos of previous rescue lines for inspiration.
+************************************************************************************************************
+************************************************************************************************************
+4/30/2017 - Update 1.9
+
+-The claw and dumper were both desigened.
+-The final part is to design the arm that lifts the claw up and down.
+-This was designed and will be printed over the week.
+
+ 

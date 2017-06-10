@@ -39,6 +39,9 @@ $fn = 4;
 //IF ETHAN, sensorHoleSize = 2.3 + 0.1;//
 //ELSE, sensorHoleSize = 2.3;//
 //*********************************************//
+module lightArm(rc)
+{
+$fn=rc;
 
 translate ([0,0,3]) {
     difference () {
@@ -90,4 +93,6 @@ translate ([0,0,3]) {
         
     }
 }
+}
 
+//lightArm(20);
