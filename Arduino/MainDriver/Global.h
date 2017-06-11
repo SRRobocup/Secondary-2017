@@ -4,7 +4,7 @@
 #include <Wire.h>
 #include "Pinmap.h"
 
-#define MSLSA
+//#define MSLSA
 
 #ifdef MSLSA
 #define ARRAY_SIZE 8
@@ -74,7 +74,7 @@ class Motor {
     static int getM1Current();
     int port;
 };
-
+void initMotorController();
 extern Motor LMotor;
 extern Motor RMotor;
 extern LaserSensor leftLaser;
@@ -87,7 +87,7 @@ const extern float encPerCM;
 const extern int arrayThreshold;
 
 int getArrayValues(int val[]);
-int getWeightedArrValue();
+float getWeightedArrValue();
 float clamp(float value, float lowerBound, float upperBound);
 void initQik();
 void stopMotors();

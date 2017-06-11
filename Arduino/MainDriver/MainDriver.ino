@@ -1,4 +1,5 @@
 #include "Global.h"
+//#include "LineTrace.cpp"
 bool ledState = false;
 long lastTime;
 
@@ -10,8 +11,8 @@ void rightInterruptFunction() {
   RMotor.encoderValue++;
 }
 
-void setup() {
-  Serial.begin(115200);
+//void setup() {
+/*  Serial.begin(115200);
   TWBR = 12;
   Wire.begin();
   initQik();
@@ -24,11 +25,12 @@ void setup() {
   attachInterrupt(digitalPinToInterrupt(LMotor.getPort()),leftInterruptFunction,RISING);
   attachInterrupt(digitalPinToInterrupt(RMotor.getPort()),rightInterruptFunction,RISING);
   lastTime = millis();
-  pinMode(LED, OUTPUT);
-}
+  pinMode(LED, OUTPUT);*/
+ // Serial.begin(9600);
+//}
 
-void loop() {
-  if (millis() - lastTime >= 1000) {
+//void loop() {
+ /* if (millis() - lastTime >= 1000) {
     ledState = !ledState;
     digitalWrite(LED, ledState ? HIGH : LOW);
     lastTime = millis();
@@ -39,5 +41,6 @@ void loop() {
   if (leftColor.getSilver() == cSilver && rightColor.getSilver() == cSilver) { //silver
     //double check
     evac();
-  }
-}
+  }*/
+  //arrayPID();
+//}

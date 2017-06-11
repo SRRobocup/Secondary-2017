@@ -1,6 +1,7 @@
 #include "Global.h"
 
-int power = 127;
+
+int power = 78;
 
 uint8_t getArrayState() {
   int val[ARRAY_SIZE];
@@ -12,15 +13,18 @@ uint8_t getArrayState() {
 }
 
 void arrayPID() {
-  int P, I, D;
-  float kP = 0;
+  float P, I, D;
+  float kP = 1;
   float kI = 0;
   float kD = 0;
-  float adjust = 0;
+  unsigned int adjust = 0;
   P = getWeightedArrValue();
   adjust = P * kP;
-  LMotor.setPower(power - adjust);
-  RMotor.setPower(power + adjust);
+  float x = power - adjust;
+  float y = power + adjust;
+  Serial.println(adjust);
+  //LMotor.setPower(adjust - power);
+  //RMotor.setPower(adjust + power);
 }
 
 void lineTrace() {
@@ -87,5 +91,15 @@ void lineTrace() {
       arrayPID();
       break;
   }
+} 
+void setup()
+{
+  Serial.begin(9600);
+  initMotorController();
+}
+
+void loop()
+{
+  arrayPID();
 }
 

@@ -1,3 +1,4 @@
+#include <QTRSensors.h>
 #include "Global.h"
 #include <SoftwareSerial.h>
 #include <Adafruit_TCS34725.h>
@@ -7,10 +8,24 @@
 #include <Wire.h>
 #include "Pinmap.h"
 
+
+#define NUM_SENSORS             8  // number of sensors used
+#define TIMEOUT                 2500  // average 4 analog samples per sensor reading
+#define EMITTER_PIN             12  // emitter is controlled by digital pin 2
+
+
 Adafruit_TCS34725 colorSensorI2C = Adafruit_TCS34725(TCS34725_INTEGRATIONTIME_50MS, TCS34725_GAIN_4X);
 TCA9548A mux = TCA9548A();
 VL53L0X longRangeI2C = VL53L0X();
-PololuQik2s12v10 motorController = PololuQik2s12v10(5, 6, 7);
+PololuQik2s12v10 motorController = PololuQik2s12v10(10, 9, 11);
+
+QTRSensorsRC qtra((unsigned char[]) {4, 5, 6, 7, 8, A0, A1, A2}, 
+  NUM_SENSORS, TIMEOUT, EMITTER_PIN);
+
+
+void  initMotorController(){
+  motorController.init();
+}
 
 Motor LMotor = Motor(0);
 Motor RMotor = Motor(1);
@@ -221,8 +236,11 @@ int Motor::getPort() {
 int getArrayValues(int val[]) {
   int startValue = 0;
   int error = 0;
-  if (sizeof(val) != sizeof(int) * ARRAY_SIZE)
+  /*if (sizeof(val) != (sizeof(int) * ARRAY_SIZE))
+  {
+    Serial.println("invalid");
     return 0;
+  }*/
 #ifdef MSLSA
   Wire.beginTransmission(0x14 >> 1);
   Wire.write(0x42);
@@ -236,46 +254,36 @@ int getArrayValues(int val[]) {
   while (Wire.available())
     Wire.read();
 #else
-  int pins[] = {3, 4, 5, 6, 7, 8, 9, 10};
-  for (int i = 0; i < 8; i++) {
-    val[i] = 2000;
-    digitalWrite(pins[i], HIGH);   // make sensor line an output
-    pinMode(pins[i], OUTPUT);      // drive sensor line high
-  }
-
-  delayMicroseconds(10);              // charge lines for 10 us
-
-  for (int i = 0; i < 8; i++) {
-    pinMode(pins[i], INPUT);       // make sensor line an input
-    digitalWrite(pins[i], LOW);        // important: disable internal pull-up!
-  }
-
-  unsigned long startTime = micros();
-  while (micros() - startTime < _maxValue) {
-    unsigned int time = micros() - startTime;
-    for (i = 0; i < _numSensors; i++) {
-      if (digitalRead(pins[i]) == LOW && time < val[i])
-        val[i] = time;
-    }
-  }
+qtra.read(val);
+for(int i = 0; i < 8; i++)
+{
+ // Serial.print(val[i]);
+ // Serial.print('\t');
+}
+//Serial.println();
 #endif
   return error;
 }
-
-int getWeightedArrValue() {
+ 
+float getWeightedArrValue() {
   int val[ARRAY_SIZE];
   getArrayValues(val);
-  return val[0] * 4
-         + val[1] * 3
-         + val[2] * 2
-         + val[3] * 1
-         + val[4] * 1
-         + val[5] * 2
-         + val[6] * 3
-         + val[7] * 4;
+  float weightedVal= val[0] * 5
+         + val[1] * .4
+         + val[2] * .03
+         + val[3] * .001
+         
+         + val[4] * .001
+         + val[5] * .03
+         + val[6] * .4
+         + val[7] * 5;
+   
+   return weightedVal;
 }
 
 void Motor::setM0Power(int power) {
+  //Serial.println(__LINE__);
+  //Serial.println(power);
   if (power == 0)
     motorController.setM0Brake(127);
   else {
@@ -285,6 +293,8 @@ void Motor::setM0Power(int power) {
 }
 
 void Motor::setM1Power(int power) {
+  //Serial.println(__LINE__);
+  //Serial.println(power);
   if (power == 0)
     motorController.setM1Brake(127);
   else {
@@ -366,7 +376,7 @@ bool seeLine() {
 }
 
 void turnToMiddleArray() {
-  int P, I, D;
+  float P, I, D;
   float kP = 0;
   float kI = 0;
   float kD = 0;

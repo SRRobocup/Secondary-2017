@@ -17,9 +17,9 @@ void setup() {
   Serial.begin(9600);
 //  pinMode(10, INPUT);
   qik.init();
-  attachInterrupt(0, countTicks, RISING);
- //qik.setM0Speed(25);
- //qik.setM1Speed(25);
+  attachInterrupt(digitalPinToInterrupt(2), countTicks, RISING);
+ qik.setM0Speed(125);
+ qik.setM1Speed(125);
 }
 
 void loop() {
@@ -27,6 +27,7 @@ void loop() {
 
  //countTicks();
   Serial.println(ticks);
+  
   
   
  if(ticks < 400)
