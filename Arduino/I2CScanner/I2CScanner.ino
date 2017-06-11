@@ -9,14 +9,24 @@ void setup()
   Serial.println("\nI2C Scanner");
 }
 
-
+void tcaselect(uint8_t i) {
+  if (i > 7) return;
+ 
+  Wire.beginTransmission(0x70);
+  Wire.write(1 << i);
+  Wire.endTransmission();  
+}
 void loop()
 {
   byte error, address;
   int nDevices;
 
   Serial.println("Scanning...");
-
+  for(int i = 0; i < 8; i++)
+  {
+  
+  Serial.println(i);
+  tcaselect(i);
   nDevices = 0;
   for(address = 1; address < 127; address++ ) 
   {
@@ -45,6 +55,7 @@ void loop()
       Serial.println(address,HEX);
     }    
   }
+  }
   if (nDevices == 0)
     Serial.println("No I2C devices found\n");
   else
@@ -52,3 +63,4 @@ void loop()
 
   delay(2500);           // wait 5 seconds for next scan
 }
+
