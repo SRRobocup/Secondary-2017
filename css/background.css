@@ -663,3 +663,13 @@ form {
 img {
   /*image-orientation:from-image;*/
 }
+
+span.li {
+  display: list-item;
+  list-style-type: disc;
+  margin-left: 40px;
+}
+
+pre {
+  color: inherit;
+}
