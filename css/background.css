@@ -679,10 +679,17 @@ pre {
   width:50%;
 }
 
+.displayImage {
+}
+
 @media only screen and (max-device-width: 480px) {
   .displayDesktop {
     float:none;
     width:auto;
     margin-right:0%;
+  }
+
+  .displayImage {
+    width:100%;
   }
 }
